@@ -25,7 +25,7 @@ def getSessionData(**kwargs):
 
 with DAG(dag_id="exam_session_dag", default_args=default_args, schedule_interval=None) as dag:
     getSessionData()
-
+   
 
 
 
