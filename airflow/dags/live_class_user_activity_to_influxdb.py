@@ -76,7 +76,7 @@ def syncMongoDataToInflux(**kwargs):
             playHeadStartAt)
         points.append(point)
         count += 1
-        if count == 500:
+        if len(points) == 500:
             writeAPI = influxClient.write_api(options=options)
             writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
             points = []
