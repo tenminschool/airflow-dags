@@ -42,14 +42,13 @@ options = WriteOptions(
 
 @task()
 def syncMongoDataToInflux(**kwargs):
+    print("called")
     # print("Remotely received value of {} for key=message".
     # format(kwargs['dag_run'].conf['session_id']))
     mongoHook = MongoHook(mongo_conn_id="stage_mongo_db_connection")
     influxClient = InfluxDBClient(url=Variable.get("INFLUX_DB_URL"),
                                   token=Variable.get("INFLUX_DB_TOKEN"),
                                   org=Variable.get("INFLUX_DB_ORG"))
-
-    print("called")
 
     pingRes = influxClient.ping()
     if not pingRes:
@@ -98,5 +97,4 @@ def syncMongoDataToInflux(**kwargs):
 
 with DAG(dag_id="live_class_user_activity_to_influx_db_etl", default_args=default_args,
          schedule_interval=None) as dag:
-    print("called")
-   # syncMongoDataToInflux()
+    syncMongoDataToInflux()
