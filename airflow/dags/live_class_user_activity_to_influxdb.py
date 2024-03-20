@@ -35,7 +35,7 @@ def syncMongoDataToInflux(**kwargs):
     mongoHook = MongoHook(mongo_conn_id="stage_mongo_db_connection")
     influxClient = InfluxDBClient(url="https://us-east-1-1.aws.cloud2.influxdata.com",
                                   token="-Eag6lpWIVBzsm8K1z3PtnSQxbLS8LOBNmIc1IYgcT6Y2RrMIFJtJv7LFZmHOYWkDMeye7oYiaolM8J8AtMAcA==",
-                                  org="10MS", timeout=20000)
+                                  org="10MS")
 
     pingRes = influxClient.ping()
     print("pingRes ", pingRes)
