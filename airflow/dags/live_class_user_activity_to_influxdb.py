@@ -5,7 +5,7 @@ from airflow.decorators import task
 from airflow.models.dag import DAG
 from airflow.providers.influxdb.hooks.influxdb import InfluxDBClient, Point
 from airflow.providers.mongo.hooks.mongo import MongoHook
-from influxdb_client.client.write_api import WriteOptions
+from influxdb_client.client.write_api import WriteOptions, SYNCHRONOUS
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -78,13 +78,13 @@ def syncMongoDataToInflux(**kwargs):
         count += 1
         if len(points) == 100:
             writeAPI = influxClient.write_api(options=options)
-            writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
+            result = writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
             points = []
-            print("Finished writing ", count)
+            print("Finished writing ", count, result)
             time.sleep(3)
 
     if len(points) > 0:
-        writeAPI = influxClient.write_api(options=options)
+        writeAPI = influxClient.write_api(options=SYNCHRONOUS)
         writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
         points = []
         print("Finished writing ", count)
