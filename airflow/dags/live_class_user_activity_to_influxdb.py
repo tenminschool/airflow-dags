@@ -49,6 +49,8 @@ def syncMongoDataToInflux(**kwargs):
                                   token=Variable.get("INFLUX_DB_TOKEN"),
                                   org=Variable.get("INFLUX_DB_ORG"))
 
+    print("called")
+
     pingRes = influxClient.ping()
     if not pingRes:
         raise Exception("Cannot connect to InfluxDB")
