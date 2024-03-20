@@ -45,7 +45,7 @@ def syncMongoDataToInflux(**kwargs):
     userActivitiesCollection = userActivityMongoDb.get_collection("users_watch_activities")
     print("user activity mongo")
 
-    count = 1
+    count = 0
     points = []
     for userActivity in userActivitiesCollection.find(
             {"live_class_id": liveClassId, "joining_at": {"$ne": None}, "leaving_at": {"$ne": None}}):
@@ -61,7 +61,7 @@ def syncMongoDataToInflux(**kwargs):
                                                              int(playHeadStartAt.timestamp() * 1000)).field(
             "playhead_end_at", int(playHeadEndAt.timestamp() * 1000)).field("duration", userActivity["watch_time"])
         points.append(point)
-
+        count += 1
         if len(points) == 100:
             writeAPI = influxClient.write_api()
             writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
