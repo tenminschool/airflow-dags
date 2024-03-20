@@ -28,7 +28,7 @@ INFLUXDB_BUCKET_NAME = "tracker_stage_db"
 INFLUX_DB_MEASUREMENT = "user_study_duration_logs"
 
 options = WriteOptions(
-    batch_size=500,
+    batch_size=10,
     flush_interval=10_000,
     jitter_interval=2_000,
     retry_interval=5_000,
@@ -76,7 +76,7 @@ def syncMongoDataToInflux(**kwargs):
             playHeadStartAt)
         points.append(point)
         count += 1
-        if len(points) == 500:
+        if len(points) == 10:
             writeAPI = influxClient.write_api(options=options)
             writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
             points = []
