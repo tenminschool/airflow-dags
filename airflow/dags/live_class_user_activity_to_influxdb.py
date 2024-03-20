@@ -4,6 +4,7 @@ from airflow.decorators import task
 from airflow.models.dag import DAG
 from airflow.providers.influxdb.hooks.influxdb import InfluxDBClient, Point
 from airflow.providers.mongo.hooks.mongo import MongoHook
+from influxdb_client.client.write_api import WriteOptions
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -26,6 +27,16 @@ MONGO_DB_NAME = "stage_liveclass_user_activity_db"
 INFLUXDB_BUCKET_NAME = "tracker_stage_db"
 INFLUX_DB_MEASUREMENT = "user_study_duration_logs"
 
+options = WriteOptions(
+    batch_size=500,
+    flush_interval=10_000,
+    jitter_interval=2_000,
+    retry_interval=5_000,
+    max_retries=5,
+    max_retry_delay=30_000,
+    exponential_base=2
+)
+
 
 @task()
 def syncMongoDataToInflux(**kwargs):
@@ -45,6 +56,8 @@ def syncMongoDataToInflux(**kwargs):
     userActivitiesCollection = userActivityMongoDb.get_collection("users_watch_activities")
     print("user activity mongo")
 
+    points = []
+
     count = 0
     for userActivity in userActivitiesCollection.find(
             {"live_class_id": liveClassId, "joining_at": {"$ne": None}, "leaving_at": {"$ne": None}}):
@@ -61,10 +74,12 @@ def syncMongoDataToInflux(**kwargs):
             "playhead_end_at", int(playHeadEndAt.timestamp() * 1000)).field("duration",
                                                                             userActivity["watch_time"]).time(
             playHeadStartAt)
+        points.append(point)
         count += 1
-        writeAPI = influxClient.write_api()
-        result = writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=point)
-        print("Finished writing ", count)
+        if count == 500:
+            writeAPI = influxClient.write_api(options=options)
+            writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
+            print("Finished writing ", count)
 
 
 with DAG(dag_id="sync_live_class_user_activity_data_to_influxdb", default_args=default_args,
