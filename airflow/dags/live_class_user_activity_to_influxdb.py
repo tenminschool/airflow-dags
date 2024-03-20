@@ -46,7 +46,6 @@ def syncMongoDataToInflux(**kwargs):
     print("user activity mongo")
 
     count = 0
-    points = []
     for userActivity in userActivitiesCollection.find(
             {"live_class_id": liveClassId, "joining_at": {"$ne": None}, "leaving_at": {"$ne": None}}):
         playHeadStartAt: datetime = userActivity["joining_at"]
@@ -60,19 +59,10 @@ def syncMongoDataToInflux(**kwargs):
             "identification_type", identificationType).field("playhead_start_at",
                                                              int(playHeadStartAt.timestamp() * 1000)).field(
             "playhead_end_at", int(playHeadEndAt.timestamp() * 1000)).field("duration", userActivity["watch_time"])
-        points.append(point)
         count += 1
-        if len(points) == 100:
-            writeAPI = influxClient.write_api()
-            result = writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
-            print("Finished writing ", count, len(points))
-            points = []
-
-    if len(points) > 0:
         writeAPI = influxClient.write_api()
-        writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
-        print("Finished writing ", count, len(points))
-        points = []
+        result = writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=point)
+        print("Finished writing ", count)
 
 
 with DAG(dag_id="sync_live_class_user_activity_data_to_influxdb", default_args=default_args,
