@@ -54,8 +54,10 @@ def syncMongoDataToInflux(**kwargs):
     if not pingRes:
         raise Exception("Cannot connect to InfluxDB")
 
+    testConnectionRes = mongoHook.connection.test_connection()
+
     mongoClient = mongoHook.get_conn()
-    if not mongoClient.is_mongos:
+    if not testConnectionRes[0]:
         raise Exception("Cannot connect to Mongodb")
 
     userActivityMongoDb = mongoClient[MONGO_DB_NAME]
