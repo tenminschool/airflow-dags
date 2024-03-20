@@ -79,6 +79,7 @@ def syncMongoDataToInflux(**kwargs):
         if count == 500:
             writeAPI = influxClient.write_api(options=options)
             writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
+            points = []
             print("Finished writing ", count)
 
 
