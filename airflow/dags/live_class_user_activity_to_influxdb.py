@@ -58,7 +58,9 @@ def syncMongoDataToInflux(**kwargs):
             "course_id", courseId).tag("media_type", mediaType).tag("identification_id", identificationId).tag(
             "identification_type", identificationType).field("playhead_start_at",
                                                              int(playHeadStartAt.timestamp() * 1000)).field(
-            "playhead_end_at", int(playHeadEndAt.timestamp() * 1000)).field("duration", userActivity["watch_time"])
+            "playhead_end_at", int(playHeadEndAt.timestamp() * 1000)).field("duration",
+                                                                            userActivity["watch_time"]).time(
+            playHeadStartAt)
         count += 1
         writeAPI = influxClient.write_api()
         result = writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=point)
