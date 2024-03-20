@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 from airflow.decorators import task
@@ -81,6 +82,7 @@ def syncMongoDataToInflux(**kwargs):
             writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
             points = []
             print("Finished writing ", count)
+            time.sleep(5)
 
 
 with DAG(dag_id="sync_live_class_user_activity_data_to_influxdb", default_args=default_args,
