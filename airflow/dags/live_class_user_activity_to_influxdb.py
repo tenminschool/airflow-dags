@@ -50,15 +50,15 @@ def syncMongoDataToInflux(**kwargs):
                                   token=Variable.get("INFLUX_DB_TOKEN"),
                                   org=Variable.get("INFLUX_DB_ORG"))
 
-    pingRes = influxClient.ping()
-    if not pingRes:
-        raise Exception("Cannot connect to InfluxDB")
+    # pingRes = influxClient.ping()
+    # if not pingRes:
+    #     raise Exception("Cannot connect to InfluxDB")
 
     testConnectionRes = mongoHook.connection.test_connection()
 
     mongoClient = mongoHook.get_conn()
-    if not testConnectionRes[0]:
-        raise Exception("Cannot connect to Mongodb")
+    # if not testConnectionRes[0]:
+    #     raise Exception("Cannot connect to Mongodb")
 
     userActivityMongoDb = mongoClient[MONGO_DB_NAME]
     userActivitiesCollection = userActivityMongoDb.get_collection("users_watch_activities")
