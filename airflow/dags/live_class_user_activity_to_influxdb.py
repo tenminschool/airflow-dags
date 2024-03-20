@@ -45,23 +45,25 @@ def syncMongoDataToInflux(**kwargs):
     userActivitiesCollection = userActivityMongoDb.get_collection("users_watch_activities")
     print("user activity mongo")
 
+    count = 1
     for userActivity in userActivitiesCollection.find(
             {"live_class_id": liveClassId, "joining_at": {"$ne": None}, "leaving_at": {"$ne": None}}):
-        print("called ", catalogSkuId)
-        playHeadStartAt: datetime = userActivity["joining_at"]
-        playHeadEndAt: datetime = userActivity["leaving_at"]
-
-        point = Point.measurement(INFLUX_DB_MEASUREMENT).tag("media_id", liveClassId).tag("auth_user_id",
-                                                                                          auth_user_id).tag(
-            "catalog_product_id", catalogProductId).tag("catalog_sku_id", catalogSkuId).tag("program_id",
-                                                                                            programId).tag(
-            "course_id", courseId).tag("media_type", mediaType).tag("identification_id", identificationId).tag(
-            "identification_type", identificationType).field("playhead_start_at",
-                                                             int(playHeadStartAt.timestamp() * 1000)).field(
-            "playhead_end_at", int(playHeadEndAt.timestamp() * 1000)).field("duration", userActivity["watch_time"])
-
-        writeAPI = influxClient.write_api()
-        writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=point)
+        print("called ", count)
+        count += 1
+        # playHeadStartAt: datetime = userActivity["joining_at"]
+        # playHeadEndAt: datetime = userActivity["leaving_at"]
+        #
+        # point = Point.measurement(INFLUX_DB_MEASUREMENT).tag("media_id", liveClassId).tag("auth_user_id",
+        #                                                                                   auth_user_id).tag(
+        #     "catalog_product_id", catalogProductId).tag("catalog_sku_id", catalogSkuId).tag("program_id",
+        #                                                                                     programId).tag(
+        #     "course_id", courseId).tag("media_type", mediaType).tag("identification_id", identificationId).tag(
+        #     "identification_type", identificationType).field("playhead_start_at",
+        #                                                      int(playHeadStartAt.timestamp() * 1000)).field(
+        #     "playhead_end_at", int(playHeadEndAt.timestamp() * 1000)).field("duration", userActivity["watch_time"])
+        #
+        # writeAPI = influxClient.write_api()
+        # writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=point)
 
 
 with DAG(dag_id="sync_live_class_user_activity_data_to_influxdb", default_args=default_args,
