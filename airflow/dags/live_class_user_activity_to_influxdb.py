@@ -98,4 +98,5 @@ def syncMongoDataToInflux(**kwargs):
 
 with DAG(dag_id="live_class_user_activity_to_influx_db_etl", default_args=default_args,
          schedule_interval=None) as dag:
-    syncMongoDataToInflux()
+    print("called")
+   # syncMongoDataToInflux()
