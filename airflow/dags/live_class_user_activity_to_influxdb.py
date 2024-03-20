@@ -65,13 +65,13 @@ def syncMongoDataToInflux(**kwargs):
         if len(points) == 100:
             writeAPI = influxClient.write_api()
             result = writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
-            print("Finished writing ", count, result)
+            print("Finished writing ", count, len(points))
             points = []
 
     if len(points) > 0:
         writeAPI = influxClient.write_api()
         writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
-        print("Finished writing ", count)
+        print("Finished writing ", count, len(points))
         points = []
 
 
