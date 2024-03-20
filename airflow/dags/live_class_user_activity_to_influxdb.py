@@ -6,6 +6,7 @@ from airflow.models.dag import DAG
 from airflow.providers.influxdb.hooks.influxdb import InfluxDBClient, Point
 from airflow.providers.mongo.hooks.mongo import MongoHook
 from influxdb_client.client.write_api import WriteOptions, SYNCHRONOUS
+from airflow.models import Variable
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -44,21 +45,24 @@ def syncMongoDataToInflux(**kwargs):
     # print("Remotely received value of {} for key=message".
     # format(kwargs['dag_run'].conf['session_id']))
     mongoHook = MongoHook(mongo_conn_id="stage_mongo_db_connection")
-    influxClient = InfluxDBClient(url="https://us-east-1-1.aws.cloud2.influxdata.com",
-                                  token="-Eag6lpWIVBzsm8K1z3PtnSQxbLS8LOBNmIc1IYgcT6Y2RrMIFJtJv7LFZmHOYWkDMeye7oYiaolM8J8AtMAcA==",
-                                  org="10MS")
+    influxClient = InfluxDBClient(url=Variable.get("INFLUX_DB_URL"),
+                                  token=Variable.get("INFLUX_DB_TOKEN"),
+                                  org=Variable.get("INFLUX_DB_ORG"))
 
     pingRes = influxClient.ping()
-    print("pingRes ", pingRes)
+    if not pingRes:
+        raise Exception("Cannot connect to InfluxDB")
 
     mongoClient = mongoHook.get_conn()
+    if not mongoClient.is_mongos:
+        raise Exception("Cannot connect to Mongodb")
+
     userActivityMongoDb = mongoClient[MONGO_DB_NAME]
     userActivitiesCollection = userActivityMongoDb.get_collection("users_watch_activities")
-    print("user activity mongo")
 
     points = []
-
     count = 0
+
     for userActivity in userActivitiesCollection.find(
             {"live_class_id": liveClassId, "joining_at": {"$ne": None}, "leaving_at": {"$ne": None}}):
         playHeadStartAt: datetime = userActivity["joining_at"]
@@ -77,7 +81,7 @@ def syncMongoDataToInflux(**kwargs):
         points.append(point)
         count += 1
         if len(points) == 100:
-            writeAPI = influxClient.write_api(options=options)
+            writeAPI = influxClient.write_api(options=SYNCHRONOUS)
             result = writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
             points = []
             print("Finished writing ", count, result)
@@ -86,7 +90,6 @@ def syncMongoDataToInflux(**kwargs):
     if len(points) > 0:
         writeAPI = influxClient.write_api(options=SYNCHRONOUS)
         writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
-        points = []
         print("Finished writing ", count)
         time.sleep(3)
 
