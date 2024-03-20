@@ -29,7 +29,7 @@ INFLUXDB_BUCKET_NAME = "tracker_stage_db"
 INFLUX_DB_MEASUREMENT = "user_study_duration_logs"
 
 options = WriteOptions(
-    batch_size=10,
+    batch_size=100,
     flush_interval=10_000,
     jitter_interval=2_000,
     retry_interval=5_000,
@@ -41,7 +41,6 @@ options = WriteOptions(
 
 @task()
 def syncMongoDataToInflux(**kwargs):
-    print("called")
     # print("Remotely received value of {} for key=message".
     # format(kwargs['dag_run'].conf['session_id']))
     mongoHook = MongoHook(mongo_conn_id="stage_mongo_db_connection")
@@ -82,9 +81,16 @@ def syncMongoDataToInflux(**kwargs):
             writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
             points = []
             print("Finished writing ", count)
-            time.sleep(5)
+            time.sleep(3)
+
+    if len(points) > 0:
+        writeAPI = influxClient.write_api(options=options)
+        writeAPI.write(INFLUXDB_BUCKET_NAME, org="10MS", record=points)
+        points = []
+        print("Finished writing ", count)
+        time.sleep(3)
 
 
-with DAG(dag_id="sync_live_class_user_activity_data_to_influxdb", default_args=default_args,
+with DAG(dag_id="live_class_user_activity_to_influx_db_etl", default_args=default_args,
          schedule_interval=None) as dag:
     syncMongoDataToInflux()
