@@ -50,6 +50,7 @@ def syncMongoDataToInflux(**kwargs):
     # format(kwargs['dag_run'].conf['session_id']))
 
     conf = kwargs['dag_run'].conf
+    print("type ", type(conf))
     if conf["live_class_id"] is None:
         print("live_class_id is required in conf")
         return
