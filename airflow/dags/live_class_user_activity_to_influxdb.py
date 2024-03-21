@@ -55,19 +55,19 @@ def syncMongoDataToInflux(**kwargs):
         return
     liveClassId = conf["live_class_id"]
 
-    if not (conf["catalog_product_id"] is None):
+    if conf["catalog_product_id"] is not None:
         catalogProductId = conf["catalog_product_id"]
 
-    if not (conf["catalog_sku_id"] is None):
+    if conf["catalog_sku_id"] is not None:
         catalogSkuId = conf["catalog_sku_id"]
 
-    if not (conf["program_id"] is None):
+    if conf["program_id"] is not None:
         programId = conf["program_id"]
 
-    if not (conf["couse_id"] is None):
-        couse_id = conf["couse_id"]
+    if conf["course_id"] is not None:
+        course_id = conf["course_id"]
 
-    if not (conf["platform"] is None):
+    if conf["platform"] is not None:
         platform = conf["platform"]
 
     print("running for liveclass id ", liveClassId)
