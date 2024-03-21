@@ -52,8 +52,7 @@ def syncMongoDataToInflux(**kwargs):
 
     print("type ", type(conf))
     if liveClassId is None:
-        print("live_class_id is required in conf")
-        return
+        raise ValueError("live_class_id is required in conf")
 
     print("running for liveclass id ", liveClassId)
     print("catalog product id ", catalogProductId)
