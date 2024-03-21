@@ -35,41 +35,25 @@ options = WriteOptions(
 @task()
 def syncMongoDataToInflux(**kwargs):
     print("called")
+    conf = kwargs['dag_run'].conf
 
-    liveClassId = ""
-    catalogProductId = ""
-    catalogSkuId = ""
-    programId = ""
-    courseId = ""
+    liveClassId = conf.get('live_class_id', None)
+    catalogProductId = conf.get("catalog_product_id", None)
+    catalogSkuId = conf.get("catalog_sku_id", None)
+    programId = conf.get("program_id", None)
+    courseId = conf.get("course_id", None)
     mediaType = "live_class"
-    platform = ""
+    platform = conf.get("platform", None)
     identificationType = "live_class"
-    identificationId = ""
+    identificationId = conf.get('live_class_id', None)
 
     # print("Remotely received value of {} for key=message".
     # format(kwargs['dag_run'].conf['session_id']))
 
-    conf = kwargs['dag_run'].conf
     print("type ", type(conf))
-    if conf.get("live_class_id", None) is None:
+    if liveClassId is None:
         print("live_class_id is required in conf")
         return
-    liveClassId = conf["live_class_id"]
-
-    if conf.get("catalog_product_id", None) is not None:
-        catalogProductId = conf["catalog_product_id"]
-
-    if conf.get("catalog_sku_id", None) is not None:
-        catalogSkuId = conf["catalog_sku_id"]
-
-    if conf.get("program_id", None) is not None:
-        programId = conf["program_id"]
-
-    if conf.get("course_id", None) is not None:
-        course_id = conf["course_id"]
-
-    if conf.get("platform", None) is not None:
-        platform = conf["platform"]
 
     print("running for liveclass id ", liveClassId)
     print("catalog product id ", catalogProductId)
