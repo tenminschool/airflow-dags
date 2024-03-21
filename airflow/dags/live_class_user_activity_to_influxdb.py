@@ -51,7 +51,8 @@ def syncMongoDataToInflux(**kwargs):
 
     conf = kwargs['dag_run'].conf
     if conf["live_class_id"] is None:
-        raise ValueError("live_class_id is required in conf")
+        print("live_class_id is required in conf")
+        return
     liveClassId = conf["live_class_id"]
 
     if not (conf["catalog_product_id"] is None):
