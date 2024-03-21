@@ -23,8 +23,8 @@ def getSessionDataTesting(**kwargs):
     print(client.list_database_names())
 
 
-with DAG(dag_id="exam_session_dag", default_args=default_args, schedule_interval=None) as dag:
-    getSessionData()
+with DAG(dag_id="exam_session_dag_testing", default_args=default_args, schedule_interval=None) as dag:
+    getSessionDataTesting()
    
 
 
