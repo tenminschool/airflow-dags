@@ -14,7 +14,7 @@ default_args = {
 
 
 @task()
-def getSessionData(**kwargs):
+def getSessionDataTesting(**kwargs):
     print("called")
     print("Remotely received value of {} for key=message".
           format(kwargs['dag_run'].conf['session_id']))
