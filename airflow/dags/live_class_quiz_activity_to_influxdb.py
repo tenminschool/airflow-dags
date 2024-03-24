@@ -14,14 +14,12 @@ default_args = {
 }
 
 
-def getQuizzes(liveClassId, connection: Connection):
+def getQuizzes(liveClassId, cursor):
     sql = "SELECT * FROM liveclass WHERE live_class_id = " + liveClassId
-    cursor = connection.cursor()
     cursor.execute(sql)
     result = cursor.fetchall()
     for row in result:
         print(row)
-    cursor.close()
 
 
 @task()
@@ -39,7 +37,9 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     mysql_hook = MySqlHook(mysql_conn_id='stage_mysql_read_connection')  # Specify the connection id
     print("ping res ", mysql_hook.test_connection())
     connection = mysql_hook.get_connection(conn_id="stage_mysql_read_connection")
-    getQuizzes(liveClassId, connection)
+    cursor = mysql_hook.get_cursor()
+    getQuizzes(liveClassId, cursor)
+    cursor.close()
     connection.close()
 
 
