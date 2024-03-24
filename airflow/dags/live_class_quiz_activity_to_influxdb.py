@@ -48,8 +48,10 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     quizzes = getQuizzes(liveClassId, connection)
     quizIds = quizzes["id"].values
 
-    sql_query = """SELECT user_id, quiz_modality, quiz_id, COUNT(*) as total_answered, SUM(is_correct) as total_correct, SUM(time_taken) as time_taken FROM quiz_responses WHERE quiz_id IN ({}) AND quiz_option_id != 0 GROUP BY user_id, quiz_modality, quiz_id""".format(
-        ', '.join(['%s'] * len(quizIds)))
+    placeholders = ','.join('?' for i in range(len(quizIds)))
+
+    sql_query = f"SELECT user_id, quiz_modality, quiz_id, COUNT(*) as total_answered, SUM(is_correct) as total_correct, SUM(time_taken) as time_taken FROM quiz_responses WHERE quiz_id IN ({placeholders}) AND quiz_option_id != 0 GROUP BY user_id, quiz_modality, quiz_id"
+    print("sql_query ", sql_query)
 
     df = pd.read_sql(sql_query, connection)
 
