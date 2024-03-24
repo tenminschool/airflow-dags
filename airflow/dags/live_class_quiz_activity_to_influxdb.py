@@ -93,7 +93,7 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     placeholders = ','.join(['%s' for _ in quizIds])
 
     # Construct the SQL query with the correct number of placeholders
-    sql_query = f"SELECT * FROM quiz_responses WHERE quiz_id IN ({placeholders}) LEFT JOIN users u on u.id = quiz_responses.user_id"
+    sql_query = f"SELECT * FROM quiz_responses LEFT JOIN users u on u.id = quiz_responses.user_id WHERE quiz_id IN ({placeholders})"
 
     # Print the SQL query for debugging
     print("sql_query:", sql_query)
