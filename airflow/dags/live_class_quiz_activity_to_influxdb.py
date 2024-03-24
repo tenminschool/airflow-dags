@@ -16,7 +16,7 @@ default_args = {
 def syncLiveClassQuizToInfluxDB(**kwargs):
     mysql_hook = MySqlHook(mysql_conn_id='stage_mysql_read_connection')  # Specify the connection id
     connection = mysql_hook.get_conn()
-    print(connection.ping())
+    print("ping res ", connection.ping())
     # cursor = connection.cursor()
     # cursor.execute("SELECT * FROM my_table")
     # result = cursor.fetchall()
