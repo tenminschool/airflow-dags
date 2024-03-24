@@ -6,6 +6,7 @@ from airflow.decorators import task
 from airflow.models.dag import DAG
 from airflow.providers.mysql.hooks.mysql import MySqlHook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.models import Variable
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -35,7 +36,7 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     platform = conf.get("platform", None)
 
     mysql_hook = MySqlHook(mysql_conn_id='stage_mysql_read_connection',
-                           schema="LIVE_CLASS_SERVICE_DB_NAME")  # Specify the connection id
+                           schema=Variable.get("LIVE_CLASS_SERVICE_DB_NAME"))  # Specify the connection id
     print("ping res ", mysql_hook.test_connection())
     connection = mysql_hook.get_connection(conn_id="stage_mysql_read_connection")
     cursor = mysql_hook.get_cursor()
