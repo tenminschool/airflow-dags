@@ -10,7 +10,7 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 default_args = {
     "owner": "Md. Toufiqul Islam",
     "start_date": datetime(2024, 2, 21),
-    "retries": 1
+    "retries": 0
 }
 
 
