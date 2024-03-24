@@ -19,7 +19,10 @@ default_args = {
 def getQuizzes(liveClassId, connection):
     sql_query = f"SELECT * FROM liveclass WHERE live_class_id = '{liveClassId}'"
     df = pd.read_sql(sql_query, connection)
-    print(df)
+    if len(df) == 0:
+        raise ValueError("No Live Class found for id {}".format(liveClassId))
+    print("data ", df[0])
+    print("column ", df[0]["id"])
 
 
 @task()
