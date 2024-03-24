@@ -4,6 +4,7 @@ from datetime import datetime
 from airflow.decorators import task
 from airflow.models.dag import DAG
 from airflow.providers.mysql.hooks.mysql import MySqlHook
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -14,8 +15,10 @@ default_args = {
 
 @task()
 def syncLiveClassQuizToInfluxDB(**kwargs):
-    mysql_hook = MySqlHook(mysql_conn_id='stage_mysql_read_connection')  # Specify the connection id
-    print("ping res ", mysql_hook.test_connection())
+    # mysql_hook = MySqlHook(mysql_conn_id='stage_mysql_read_connection')  # Specify the connection id
+    # print("ping res ", mysql_hook.test_connection())
+    postgresHook = PostgresHook(postgres_conn_id="postgres_connection_stage")
+    print("ping res ", postgresHook.test_connection())
     # cursor = connection.cursor()
     # cursor.execute("SELECT * FROM my_table")
     # result = cursor.fetchall()
