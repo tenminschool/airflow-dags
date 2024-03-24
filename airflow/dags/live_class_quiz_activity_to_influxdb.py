@@ -7,6 +7,7 @@ from airflow.models.dag import DAG
 from airflow.providers.mysql.hooks.mysql import MySqlHook
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.models import Variable
+import pandas as pd
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -15,12 +16,10 @@ default_args = {
 }
 
 
-def getQuizzes(liveClassId, cursor):
-    sql = f"SELECT * FROM liveclass WHERE live_class_id = '{liveClassId}'"
-    cursor.execute(sql)
-    result = cursor.fetchall()
-    for row in result:
-        print(type(row))
+def getQuizzes(liveClassId, connection):
+    sql_query = f"SELECT * FROM liveclass WHERE live_class_id = '{liveClassId}'"
+    df = pd.read_sql(sql_query, connection)
+    print(df)
 
 
 @task()
@@ -39,9 +38,7 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
                            schema=Variable.get("LIVE_CLASS_SERVICE_DB_NAME"))  # Specify the connection id
     print("ping res ", mysql_hook.test_connection())
     connection = mysql_hook.get_connection(conn_id="stage_mysql_read_connection")
-    cursor = mysql_hook.get_cursor()
-    getQuizzes(liveClassId, cursor)
-    cursor.close()
+    getQuizzes(liveClassId, connection)
 
 
 with DAG(dag_id="live_class_quiz_activity_to_influx_db_etl", default_args=default_args,
