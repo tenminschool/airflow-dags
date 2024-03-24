@@ -21,8 +21,12 @@ def getQuizzes(liveClassId, connection):
     df = pd.read_sql(sql_query, connection)
     if len(df) == 0:
         raise ValueError("No Live Class found for id {}".format(liveClassId))
-    print("data ", df.iloc[0])
-    print("column ", df.iloc[0]["id"])
+
+    liveClassNumericId = df.iloc[0]["id"]
+
+    sql_query = f"SELECT * FROM quizzes WHERE live_class_id = '{liveClassNumericId}'"
+    df = pd.read_sql(sql_query, connection)
+    print("values ", df.values)
 
 
 @task()
