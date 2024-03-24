@@ -15,8 +15,7 @@ default_args = {
 @task()
 def syncLiveClassQuizToInfluxDB(**kwargs):
     mysql_hook = MySqlHook(mysql_conn_id='stage_mysql_read_connection')  # Specify the connection id
-    connection = mysql_hook.get_conn()
-    print("ping res ", connection.ping())
+    print("ping res ", mysql_hook.test_connection())
     # cursor = connection.cursor()
     # cursor.execute("SELECT * FROM my_table")
     # result = cursor.fetchall()
