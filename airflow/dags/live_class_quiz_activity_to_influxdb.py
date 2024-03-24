@@ -45,8 +45,8 @@ def transformQuizzes(df, liveClassId, catalogProductId, catalogSkuId, programId,
             "catalog_product_id", catalogProductId).tag("catalog_sku_id", catalogSkuId).tag("program_id",
                                                                                             programId).tag(
             "course_id", courseId).tag("platform", platform).tag("modality", row["quiz_modality"]).tag(
-            "quiz_id", row["quiz_id"]).field("participate_at",
-                                             int(createdAt.timestamp() * 1000)).field(
+            "quiz_id", row["quiz_id"]).tag("auth_user_id", row["auth_user_id"]).field("participate_at",
+                                                                                      int(createdAt.timestamp() * 1000)).field(
             "is_correct", row["is_correct"]).field("time_taken",
                                                    row["time_taken"]).time(
             row["createdAt"])
@@ -93,7 +93,7 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     placeholders = ','.join(['%s' for _ in quizIds])
 
     # Construct the SQL query with the correct number of placeholders
-    sql_query = f"SELECT * FROM quiz_responses WHERE quiz_id IN ({placeholders})"
+    sql_query = f"SELECT * FROM quiz_responses WHERE quiz_id IN ({placeholders}) LEFT JOIN users u on u.id = quiz_responses.user_id"
 
     # Print the SQL query for debugging
     print("sql_query:", sql_query)
