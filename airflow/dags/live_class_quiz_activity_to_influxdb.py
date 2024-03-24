@@ -5,12 +5,16 @@ from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import DAG
 from airflow.providers.mysql.hooks.mysql import MySqlHook
+from influxdb_client.client.write.point import Point
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
     "start_date": datetime(2024, 2, 21),
     "retries": 0
 }
+
+INFLUXDB_BUCKET_NAME = "tracker_stage_db"
+INFLUX_DB_MEASUREMENT = "quiz_participants"
 
 
 def getQuizzes(liveClassId, connection):
@@ -26,12 +30,24 @@ def getQuizzes(liveClassId, connection):
     return df
 
 
-def transformQuizzes(df):
-    transformData = []
-    for index, row in df.iterrows():
-        transformData.append(row["user_id"])
+def transformQuizzes(df, liveClassId, catalogProductId, catalogSkuId, programId, courseId, platform):
+    influxdbPoints = []
 
-    return transformData
+    for index, row in df.iterrows():
+        # transformData.append(row["user_id"])
+        point = Point.measurement(INFLUX_DB_MEASUREMENT).tag("indentification_type", "live_class").tag(
+            "identification_id", liveClassId).tag(
+            "catalog_product_id", catalogProductId).tag("catalog_sku_id", catalogSkuId).tag("program_id",
+                                                                                            programId).tag(
+            "course_id", courseId).tag("platform", platform).tag("modality", row["quiz_modality"]).tag(
+            "quiz_id", row["quiz_id"]).field("participate_at",
+                                             row["createdAt"]).field(
+            "is_correct", row["is_correct"]).field("time_taken",
+                                                   row["time_taken"]).time(
+            row["createdAt"])
+        influxdbPoints.append(point)
+
+    return influxdbPoints
 
 
 @task()
@@ -57,14 +73,14 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     placeholders = ','.join(['%s' for _ in quizIds])
 
     # Construct the SQL query with the correct number of placeholders
-    sql_query = f"SELECT user_id, quiz_modality, quiz_id, COUNT(*) as total_answered, SUM(is_correct) as total_correct, SUM(time_taken) as time_taken FROM quiz_responses WHERE quiz_id IN ({placeholders}) AND quiz_option_id != 0 GROUP BY user_id, quiz_modality, quiz_id"
+    sql_query = f"SELECT * FROM quiz_responses WHERE quiz_id IN ({placeholders})"
 
     # Print the SQL query for debugging
     print("sql_query:", sql_query)
 
     df = pd.read_sql_query(sql_query, params=quizIds, con=connection)
 
-    transformedData = transformQuizzes(df)
+    transformedData = transformQuizzes(df, liveClassId, catalogProductId, catalogSkuId, programId, courseId, platform)
     print("data ", transformedData)
 
 
