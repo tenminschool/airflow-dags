@@ -28,7 +28,6 @@ def sync_super_chat_data(**kwargs):
     print(live_class_id, catalog_product_id, catalog_sku_id, program_id, course_id,
           media_type, platform, identification_type, identification_id)
 
-
     sql_query = f"""
     SELECT sessions."createdAt" as start_at, sessions.id, conversation_id, identification_type, identification_id, resolved_at as end_at,
        thread_id, initiated_member_id, members.auth_user_id, rating_type, rating_value, sessions.status
@@ -50,7 +49,7 @@ with DAG(dag_id="superchat_to_influx", default_args=default_args, schedule_inter
 
     task_run_query = PostgresOperator(
         task_id="run_query",
-        postgres_conn_id="postgres_default",
+        postgres_conn_id="postgres_connection_stage",
         sql=task_sync_super_chat_data.output,
     )
 
