@@ -23,12 +23,12 @@ def sync_super_chat_data(**kwargs):
     media_type = "live_class"
     platform = conf.get("platform", None)
     identification_type = "live_class"
-    identification_id = live_class_id  # Using live_class_id obtained from conf
+    identification_id = live_class_id
 
     print(live_class_id, catalog_product_id, catalog_sku_id, program_id, course_id,
           media_type, platform, identification_type, identification_id)
 
-    # Execute SQL query with custom live class id
+
     sql_query = f"""
     SELECT sessions."createdAt" as start_at, sessions.id, conversation_id, identification_type, identification_id, resolved_at as end_at,
        thread_id, initiated_member_id, members.auth_user_id, rating_type, rating_value, sessions.status
@@ -36,7 +36,7 @@ def sync_super_chat_data(**kwargs):
     INNER JOIN members ON sessions.initiated_member_id = members.id
     WHERE sessions.identification_type = 'live_class' AND identification_id = '{live_class_id}';
     """
-    # Print the SQL query
+
     print("Executing SQL query:")
     print(sql_query)
     return sql_query
