@@ -20,7 +20,7 @@ def getQuizzes(liveClassId, cursor):
     cursor.execute(sql)
     result = cursor.fetchall()
     for row in result:
-        print(row)
+        print(type(row))
 
 
 @task()
@@ -42,7 +42,6 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     cursor = mysql_hook.get_cursor()
     getQuizzes(liveClassId, cursor)
     cursor.close()
-    connection.close()
 
 
 with DAG(dag_id="live_class_quiz_activity_to_influx_db_etl", default_args=default_args,
