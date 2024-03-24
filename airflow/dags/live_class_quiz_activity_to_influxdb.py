@@ -16,7 +16,6 @@ default_args = {
 }
 
 
-@task
 def getQuizzes(liveClassId, connection):
     sql_query = f"SELECT * FROM liveclass WHERE live_class_id = '{liveClassId}'"
     df = pd.read_sql(sql_query, connection)
