@@ -46,7 +46,14 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     print("ping res ", mysql_hook.test_connection())
     connection = mysql_hook.get_conn()
     quizzes = getQuizzes(liveClassId, connection)
-    print("quizids ", quizzes["id"].values)
+    quizIds = quizzes["id"].values
+
+    sql_query = """SELECT user_id, quiz_modality, quiz_id, COUNT(*) as total_answered, SUM(is_correct) as total_correct, SUM(time_taken) as time_taken FROM quiz_responses WHERE quiz_id IN ({}) AND quiz_option_id != 0 GROUP BY user_id, quiz_modality, quiz_id""".format(
+        ', '.join(['%s'] * len(quizIds)))
+
+    df = pd.read_sql(sql_query, connection)
+
+    print(df.to_string(index=False))
 
 
 with DAG(dag_id="live_class_quiz_activity_to_influx_db_etl", default_args=default_args,
