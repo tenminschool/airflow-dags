@@ -47,7 +47,6 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     print("ping res ", mysql_hook.test_connection())
     connection = mysql_hook.get_conn()
 
-
     quizzes = getQuizzes(liveClassId, connection)
     quizIds = quizzes["id"].values
 
@@ -66,4 +65,5 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
 
 with DAG(dag_id="live_class_quiz_activity_to_influx_db_etl", default_args=default_args,
          schedule_interval=None) as dag:
+    getQuizzes()
     syncLiveClassQuizToInfluxDB()
