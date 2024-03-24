@@ -34,7 +34,8 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     courseId = conf.get("course_id", None)
     platform = conf.get("platform", None)
 
-    mysql_hook = MySqlHook(mysql_conn_id='stage_mysql_read_connection')  # Specify the connection id
+    mysql_hook = MySqlHook(mysql_conn_id='stage_mysql_read_connection',
+                           schema="LIVE_CLASS_SERVICE_DB_NAME")  # Specify the connection id
     print("ping res ", mysql_hook.test_connection())
     connection = mysql_hook.get_connection(conn_id="stage_mysql_read_connection")
     cursor = mysql_hook.get_cursor()
