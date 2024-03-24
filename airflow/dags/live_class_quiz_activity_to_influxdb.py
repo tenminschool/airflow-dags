@@ -1,13 +1,10 @@
-import time
 from datetime import datetime
 
-from MySQLdb import Connection
+import pandas as pd
 from airflow.decorators import task
+from airflow.models import Variable
 from airflow.models.dag import DAG
 from airflow.providers.mysql.hooks.mysql import MySqlHook
-from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.models import Variable
-import pandas as pd
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -27,6 +24,14 @@ def getQuizzes(liveClassId, connection):
     sql_query = f"SELECT * FROM quizzes WHERE live_class_id = '{liveClassNumericId}'"
     df = pd.read_sql(sql_query, connection)
     return df
+
+
+def transformQuizzes(df):
+    transformData = []
+    for index, row in df.iterrows():
+        transformData.append(row)
+
+    return transformData
 
 
 @task()
@@ -59,7 +64,8 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
 
     df = pd.read_sql_query(sql_query, params=quizIds, con=connection)
 
-    print(df)
+    transformedData = transformQuizzes(df)
+    print("data ", transformedData)
 
 
 with DAG(dag_id="live_class_quiz_activity_to_influx_db_etl", default_args=default_args,
