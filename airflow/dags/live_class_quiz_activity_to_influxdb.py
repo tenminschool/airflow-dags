@@ -16,7 +16,7 @@ default_args = {
 
 
 def getQuizzes(liveClassId, cursor):
-    sql = f"SELECT * FROM my_table WHERE live_class_id = '{liveClassId}'"
+    sql = f"SELECT * FROM liveclass WHERE live_class_id = '{liveClassId}'"
     cursor.execute(sql)
     result = cursor.fetchall()
     for row in result:
