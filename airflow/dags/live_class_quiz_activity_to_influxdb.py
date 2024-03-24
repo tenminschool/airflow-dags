@@ -48,14 +48,19 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     quizzes = getQuizzes(liveClassId, connection)
     quizIds = quizzes["id"].values
 
-    placeholders = ','.join('?' for i in range(len(quizIds)))
+    placeholders = ','.join(['%s' for _ in quizIds])
 
+    # Construct the SQL query with the correct number of placeholders
     sql_query = f"SELECT user_id, quiz_modality, quiz_id, COUNT(*) as total_answered, SUM(is_correct) as total_correct, SUM(time_taken) as time_taken FROM quiz_responses WHERE quiz_id IN ({placeholders}) AND quiz_option_id != 0 GROUP BY user_id, quiz_modality, quiz_id"
-    print("sql_query ", sql_query)
 
-    df = pd.read_sql_query(sql_query, params=quizIds, con=connection)
+    # Print the SQL query for debugging
+    print("sql_query:", sql_query)
 
-    print(df.to_string(index=False))
+    cursor = connection.cursor()
+    cursor.execute(sql_query, quizIds)
+
+    df = pd.DataFrame(cursor.fetchall(), columns=cursor.column_names)
+    print(df)
 
 
 with DAG(dag_id="live_class_quiz_activity_to_influx_db_etl", default_args=default_args,
