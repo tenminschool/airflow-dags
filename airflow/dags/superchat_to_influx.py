@@ -51,11 +51,10 @@ with DAG(dag_id="superchat_to_influx", default_args=default_args, schedule_inter
         provide_context=True,
     )
 
-    # task_run_query = PostgresOperator(
-    #     task_id="run_query",
-    #     postgres_conn_id="postgres_connection_stage",
-    #     sql=task_sync_super_chat_data.output,
-    # )
+    task_run_query = PostgresOperator(
+        task_id="run_query",
+        postgres_conn_id="postgres_connection_stage",
+        sql=task_sync_super_chat_data.output,
+    )
 
-    # task_sync_super_chat_data >> task_run_query
-    sync_super_chat_data(task_id="sync_super_chat_data")
+    task_sync_super_chat_data >> task_run_query
