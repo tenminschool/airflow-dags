@@ -1,3 +1,4 @@
+import time
 from datetime import datetime
 
 import pandas as pd
@@ -5,7 +6,9 @@ from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import DAG
 from airflow.providers.mysql.hooks.mysql import MySqlHook
+from influxdb_client.client.influxdb_client import InfluxDBClient
 from influxdb_client.client.write.point import Point
+from influxdb_client.client.write_api import SYNCHRONOUS
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -15,6 +18,8 @@ default_args = {
 
 INFLUXDB_BUCKET_NAME = "tracker_stage_db"
 INFLUX_DB_MEASUREMENT = "quiz_participants"
+
+DELAY_SEC = 3
 
 
 def getQuizzes(liveClassId, connection):
@@ -50,6 +55,13 @@ def transformQuizzes(df, liveClassId, catalogProductId, catalogSkuId, programId,
     return influxdbPoints
 
 
+def writeToInfluxDb(transformedData: list, influxClient: InfluxDBClient):
+    writeAPI = influxClient.write_api(options=SYNCHRONOUS)
+    writeAPI.write(INFLUXDB_BUCKET_NAME, org=Variable.get("INFLUX_DB_ORG"), record=transformedData)
+    print("Finished writing ", len(transformedData))
+    time.sleep(DELAY_SEC)
+
+
 @task()
 def syncLiveClassQuizToInfluxDB(**kwargs):
     print("called")
@@ -67,6 +79,14 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     print("ping res ", mysql_hook.test_connection())
     connection = mysql_hook.get_conn()
 
+    influxClient = InfluxDBClient(url=Variable.get("INFLUX_DB_URL"),
+                                  token=Variable.get("INFLUX_DB_TOKEN"),
+                                  org=Variable.get("INFLUX_DB_ORG"))
+
+    pingRes = influxClient.ping()
+    if not pingRes:
+        raise ValueError("Cannot connect to InfluxDB")
+
     quizzes = getQuizzes(liveClassId, connection)
     quizIds = quizzes["id"].values
 
@@ -81,7 +101,8 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     df = pd.read_sql_query(sql_query, params=quizIds, con=connection)
 
     transformedData = transformQuizzes(df, liveClassId, catalogProductId, catalogSkuId, programId, courseId, platform)
-    print("data ", transformedData)
+
+    writeToInfluxDb(transformedData, influxClient)
 
 
 with DAG(dag_id="live_class_quiz_activity_to_influx_db_etl", default_args=default_args,
