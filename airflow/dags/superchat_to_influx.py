@@ -33,9 +33,13 @@ def sync_super_chat_data(**kwargs):
        thread_id, initiated_member_id, members.auth_user_id, rating_type, rating_value, sessions.status
     FROM sessions
     INNER JOIN members ON sessions.initiated_member_id = members.id
-    WHERE sessions.identification_type = 'live_class' AND identification_id = '{live_class_id}';
+    WHERE sessions.identification_type = 'live_class' AND identification_id = '1naPAnx4w1';
     """
 
+    # WHERE
+    # sessions.identification_type = 'live_class'
+    # AND
+    # identification_id = '{live_class_id}';
     print("Executing SQL query:")
     print(sql_query)
     return sql_query
