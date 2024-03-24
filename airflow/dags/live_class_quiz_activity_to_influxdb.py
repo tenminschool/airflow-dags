@@ -26,7 +26,7 @@ def getQuizzes(liveClassId, connection):
 
     sql_query = f"SELECT * FROM quizzes WHERE live_class_id = '{liveClassNumericId}'"
     df = pd.read_sql(sql_query, connection)
-    print("values ", df.values)
+    return df
 
 
 @task()
@@ -45,7 +45,8 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
                            schema=Variable.get("LIVE_CLASS_SERVICE_DB_NAME"))  # Specify the connection id
     print("ping res ", mysql_hook.test_connection())
     connection = mysql_hook.get_conn()
-    getQuizzes(liveClassId, connection)
+    quizzes = getQuizzes(liveClassId, connection)
+    print("quizids ", quizzes["id"].values)
 
 
 with DAG(dag_id="live_class_quiz_activity_to_influx_db_etl", default_args=default_args,
