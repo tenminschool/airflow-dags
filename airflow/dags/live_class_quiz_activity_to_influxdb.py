@@ -47,8 +47,9 @@ def transformQuizzes(df, liveClassId, catalogProductId, catalogSkuId, programId,
             "course_id", courseId).tag("platform", platform).tag("modality", row["quiz_modality"]).tag(
             "quiz_id", row["quiz_id"]).tag("auth_user_id", row["auth_user_id"]).field("participate_at",
                                                                                       int(createdAt.timestamp() * 1000)).field(
-            "is_correct", row["is_correct"]).field("time_taken",
-                                                   row["time_taken"]).time(
+            "is_correct", row["is_correct"]).field("quiz_option_id", row["quiz_option_id"]).field("time_taken",
+                                                                                                  row[
+                                                                                                      "time_taken"]).time(
             row["createdAt"])
         influxdbPoints.append(point)
 
