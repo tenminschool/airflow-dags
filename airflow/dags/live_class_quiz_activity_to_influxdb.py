@@ -39,14 +39,14 @@ def transformQuizzes(df, liveClassId, catalogProductId, catalogSkuId, programId,
     influxdbPoints = []
 
     for index, row in df.iterrows():
-        # transformData.append(row["user_id"])
+        createdAt: datetime = row["createdAt"]
         point = Point.measurement(INFLUX_DB_MEASUREMENT).tag("indentification_type", "live_class").tag(
             "identification_id", liveClassId).tag(
             "catalog_product_id", catalogProductId).tag("catalog_sku_id", catalogSkuId).tag("program_id",
                                                                                             programId).tag(
             "course_id", courseId).tag("platform", platform).tag("modality", row["quiz_modality"]).tag(
             "quiz_id", row["quiz_id"]).field("participate_at",
-                                             row["createdAt"]).field(
+                                             int(createdAt.timestamp() * 1000)).field(
             "is_correct", row["is_correct"]).field("time_taken",
                                                    row["time_taken"]).time(
             row["createdAt"])
