@@ -29,7 +29,7 @@ def getQuizzes(liveClassId, connection):
 def transformQuizzes(df):
     transformData = []
     for index, row in df.iterrows():
-        transformData.append(row["id"])
+        transformData.append(row["user_id"])
 
     return transformData
 
