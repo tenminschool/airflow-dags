@@ -58,8 +58,8 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
 
     cursor = connection.cursor()
     cursor.execute(sql_query, quizIds)
-
-    df = pd.DataFrame(cursor.fetchall())
+    df = pd.read_sql_query(sql_query, params=quizIds, con=connection)
+    # df = pd.DataFrame(cursor.fetchall())
     print(df)
 
 
