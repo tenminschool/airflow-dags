@@ -8,7 +8,7 @@ from airflow.providers.postgres.operators.postgres import PostgresOperator
 default_args = {
     "owner": "Papa Tiger",
     "start_date": datetime(2024, 3, 24),
-    "retries": 1
+    "retries": 0
 }
 
 @task()
