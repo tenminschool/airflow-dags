@@ -31,10 +31,10 @@ def generate_postgres_query(**kwargs):
 
     conf = kwargs['dag_run'].conf
     live_class_id = conf.get('live_class_id', None)
-    catalog_product_id = conf.get("catalog_product_id", None)
-    catalog_sku_id = conf.get("catalog_sku_id", None)
-    program_id = conf.get("program_id", None)
-    course_id = conf.get("course_id", None)
+    catalog_product_id = conf.get("catalog_product_id", 0)
+    catalog_sku_id = conf.get("catalog_sku_id", 0)
+    program_id = conf.get("program_id", 0)
+    course_id = conf.get("course_id", 0)
     platform = conf.get("platform", None)
     
     sql_query = f"""
@@ -60,8 +60,10 @@ def generate_postgres_query(**kwargs):
     FROM sessions
     INNER JOIN members ON sessions.initiated_member_id = members.id
     WHERE sessions.identification_type = 'live_class' 
-    AND identification_id = '{live_class_id}';
+    AND identification_id = 'JUxBRrfy7f';
     """
+
+    # AND identification_id = '{live_class_id}';
     return sql_query
 
 
