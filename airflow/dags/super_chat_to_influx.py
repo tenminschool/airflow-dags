@@ -57,27 +57,28 @@ def ping_postgres():
 
 @dag("super_chat_to_influx", default_args=default_args, schedule_interval=None)
 def dag_definition():
-    # init_task = init_syncing_super_chat_data()
-    # ping_db = ping_postgres()
-    # query_task = generate_postgres_query()
+    init_task = init_syncing_super_chat_data()
+    ping_db = ping_postgres()
+    query_task = generate_postgres_query()
 
-    # init_task >> ping_db >> query_task 
+    init_task >> ping_db >> query_task 
 
-    ping_db = PythonOperator(
-        task_id='ping_db',
-        python_callable=ping_postgres, 
-    )
+    # ping_db = PythonOperator(
+    #     task_id='ping_db',
+    #     python_callable=ping_postgres, 
+    # )
 
-    query_task = PythonOperator(
-        task_id='query_task',
-        python_callable=generate_postgres_query,
-    )
+    # query_task = PythonOperator(
+    #     task_id='query_task',
+    #     python_callable=generate_postgres_query,
+    # )
 
-    init_task = PythonOperator(
-        task_id='init_task',
-        python_callable=init_syncing_super_chat_data,
-    )
+    # init_task = PythonOperator(
+    #     task_id='init_task',
+    #     python_callable=init_syncing_super_chat_data,
+    # )
 
-    init_task >> ping_db >> query_task
+    init_task  >> ping_db >> query_task
+    # >> ping_db >> query_task
 
 dag_instance = dag_definition()
