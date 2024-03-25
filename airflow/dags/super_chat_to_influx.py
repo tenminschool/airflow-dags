@@ -27,15 +27,15 @@ def init_syncing_super_chat_data(**kwargs):
     logging.info(f"Parameters: {live_class_id}, {catalog_product_id}, {catalog_sku_id}, {program_id}, {course_id}, "
                  f"{media_type}, {platform}, {identification_type}, {identification_id}")
 
-def generate_postgres_query(**kwargs):
+def generate_postgres_query():
 
-    conf = kwargs['dag_run'].conf
-    live_class_id = conf.get('live_class_id', None)
-    catalog_product_id = conf.get("catalog_product_id", None)
-    catalog_sku_id = conf.get("catalog_sku_id", None)
-    program_id = conf.get("program_id", None)
-    course_id = conf.get("course_id", None)
-    platform = conf.get("platform", None)
+    # conf = kwargs['dag_run'].conf
+    # live_class_id = conf.get('live_class_id', None)
+    # catalog_product_id = conf.get("catalog_product_id", None)
+    # catalog_sku_id = conf.get("catalog_sku_id", None)
+    # program_id = conf.get("program_id", None)
+    # course_id = conf.get("course_id", None)
+    # platform = conf.get("platform", None)
     
     sql_query = f"""
     SELECT 
