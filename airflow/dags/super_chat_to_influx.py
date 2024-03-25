@@ -83,7 +83,7 @@ def execute_query_and_fetch_result():
         # tags	liveclass_id	auth_user_id	thread_id	catalog_prod_id	catalog_sku_id	program_id	course_id	platform	status
         for row in results:
             
-            logging.info(row.thread_id) 
+            logging.info(row[0].thread_id) 
     except Exception as e:
         logging.error(f"Error executing SQL query: {e}")
 
