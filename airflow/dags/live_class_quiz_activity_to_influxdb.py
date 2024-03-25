@@ -19,7 +19,7 @@ default_args = {
 INFLUXDB_BUCKET_NAME = "tracker_stage_db"
 INFLUX_DB_MEASUREMENT = "quiz_participants"
 
-DELAY_SEC = 3
+DELAY_SEC = 1
 
 
 def getQuizzes(liveClassId, connection):
@@ -105,7 +105,7 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     quizIds = quizzes["id"].values
 
     page = 1
-    limit = 1
+    limit = 500
 
     while True:
         print("page ", page)
