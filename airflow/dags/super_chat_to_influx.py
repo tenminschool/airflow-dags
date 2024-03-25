@@ -27,16 +27,43 @@ def init_syncing_super_chat_data(**kwargs):
     logging.info(f"Parameters: {live_class_id}, {catalog_product_id}, {catalog_sku_id}, {program_id}, {course_id}, "
                  f"{media_type}, {platform}, {identification_type}, {identification_id}")
 
-def generate_postgres_query():
-    live_class_id = 'JUxBRrfy7f' 
+def generate_postgres_query(**kwargs):
+
+    conf = kwargs['dag_run'].conf
+    live_class_id = conf.get('live_class_id', None)
+    catalog_product_id = conf.get("catalog_product_id", None)
+    catalog_sku_id = conf.get("catalog_sku_id", None)
+    program_id = conf.get("program_id", None)
+    course_id = conf.get("course_id", None)
+    platform = conf.get("platform", None)
+    
     sql_query = f"""
-    SELECT sessions."createdAt" as start_at, sessions.id, conversation_id, identification_type, identification_id, resolved_at as end_at,
-       thread_id, initiated_member_id, members.auth_user_id, rating_type, rating_value, sessions.status
+    SELECT 
+        sessions."createdAt" as start_at, 
+        sessions.id, 
+        conversation_id, 
+        identification_type, 
+        identification_id, 
+        resolved_at as end_at,
+        thread_id, 
+        initiated_member_id, 
+        members.auth_user_id, 
+        rating_type, 
+        rating_value, 
+        sessions.status,
+        '{live_class_id}' as live_class_id,
+        '{catalog_product_id}' as catalog_product_id,
+        '{catalog_sku_id}' as catalog_sku_id,
+        '{program_id}' as program_id,
+        '{course_id}' as course_id,
+        '{platform}' as platform
     FROM sessions
     INNER JOIN members ON sessions.initiated_member_id = members.id
-    WHERE sessions.identification_type = 'live_class' AND identification_id = '{live_class_id}';
+    WHERE sessions.identification_type = 'live_class' 
+    AND identification_id = '{live_class_id}';
     """
     return sql_query
+
 
 def execute_query_and_fetch_result():
     try:
