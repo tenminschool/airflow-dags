@@ -81,7 +81,7 @@ def execute_query_and_fetch_result():
             raise ValueError("Cannot connect to InfluxDB")
         
         for row in results:
-            logging.info("Thread ID : ", row[6]) 
+            logging.info(row) 
 
     except Exception as e:
         logging.error(f"Error executing SQL query: {e}")
