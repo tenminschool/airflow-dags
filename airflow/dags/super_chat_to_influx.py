@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from airflow.decorators import dag, task
+from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
 
@@ -11,7 +11,6 @@ default_args = {
     "retries": 1
 }
 
-@task()
 def init_syncing_super_chat_data(**kwargs):
     logging.info("Called sync_super_chat_data")
     conf = kwargs['dag_run'].conf
@@ -28,7 +27,6 @@ def init_syncing_super_chat_data(**kwargs):
     logging.info(f"Parameters: {live_class_id}, {catalog_product_id}, {catalog_sku_id}, {program_id}, {course_id}, "
                  f"{media_type}, {platform}, {identification_type}, {identification_id}")
 
-@task()
 def generate_postgres_query():
     sql_query = """
     SELECT sessions."createdAt" as start_at, sessions.id, conversation_id, identification_type, identification_id, resolved_at as end_at,
@@ -55,15 +53,20 @@ def ping_postgres():
         logging.error(f"Error pinging PostgreSQL database: {e}")
 
 
-@dag("super_chat_to_influx", default_args=default_args, schedule_interval=None)
-def dag_definition():
-    init_task = init_syncing_super_chat_data
+with DAG("super_chat_to_influx", default_args=default_args, schedule_interval=None) as dag:
+    init_task = PythonOperator(
+        task_id='init_task',
+        python_callable=init_syncing_super_chat_data,
+    )
+    
     ping_db = PythonOperator(
         task_id='ping_db',
         python_callable=ping_postgres, 
     )
-    query_task = generate_postgres_query
+    
+    query_task = PythonOperator(
+        task_id='query_task',
+        python_callable=generate_postgres_query,
+    )
 
     init_task >> ping_db >> query_task 
-
-dag_instance = dag_definition()
