@@ -105,7 +105,7 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     quizIds = quizzes["id"].values
 
     page = 1
-    limit = 100
+    limit = 1
 
     while True:
         print("page ", page)
