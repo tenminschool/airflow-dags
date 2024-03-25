@@ -31,10 +31,10 @@ def generate_postgres_query(**kwargs):
 
     conf = kwargs['dag_run'].conf
     live_class_id = conf.get('live_class_id', None)
-    catalog_product_id = conf.get("catalog_product_id", 0)
-    catalog_sku_id = conf.get("catalog_sku_id", 0)
-    program_id = conf.get("program_id", 0)
-    course_id = conf.get("course_id", 0)
+    catalog_product_id = conf.get("catalog_product_id", None)
+    catalog_sku_id = conf.get("catalog_sku_id", None)
+    program_id = conf.get("program_id", None)
+    course_id = conf.get("course_id", None)
     platform = conf.get("platform", None)
     
     sql_query = f"""
@@ -50,19 +50,19 @@ def generate_postgres_query(**kwargs):
         members.auth_user_id, 
         rating_type, 
         rating_value, 
-        sessions.status,
-        '{live_class_id}' as live_class_id,
-        '{catalog_product_id}' as catalog_product_id,
-        '{catalog_sku_id}' as catalog_sku_id,
-        '{program_id}' as program_id,
-        '{course_id}' as course_id,
-        '{platform}' as platform
+        sessions.status
+ 
     FROM sessions
     INNER JOIN members ON sessions.initiated_member_id = members.id
     WHERE sessions.identification_type = 'live_class' 
     AND identification_id = 'JUxBRrfy7f';
     """
-
+    # '{live_class_id}' as live_class_id,
+    # '{catalog_product_id}' as catalog_product_id,
+    # '{catalog_sku_id}' as catalog_sku_id,
+    # '{program_id}' as program_id,
+    # '{course_id}' as course_id,
+    # '{platform}' as platform
     # AND identification_id = '{live_class_id}';
     return sql_query
 
