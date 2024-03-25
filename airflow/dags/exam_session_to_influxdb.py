@@ -11,15 +11,15 @@ from airflow.models import Variable
 default_args = {
     "owner": "Md. Toufiqul Islam",
     "start_date": datetime(2024, 2, 21),
-    "retries": 1
+    "retries": 0
 }
 
-MONGO_DB_NAME = "stage_liveclass_user_activity_db"
-INFLUXDB_BUCKET_NAME = "tracker_stage_db"
-INFLUX_DB_MEASUREMENT = "user_study_duration_logs"
+MONGO_DB_NAME = Variable.get("EXAM_DB_NAME")
+INFLUXDB_BUCKET_NAME = Variable.get("INFLUX_DB_TRACKER_DB_NAME")
+INFLUX_DB_MEASUREMENT = "exam_users"
 
 BATCH_SIZE = 100
-DELAY_SEC = 3
+DELAY_SEC = 1
 
 options = WriteOptions(
     batch_size=100,
@@ -37,24 +37,22 @@ def syncMongoDataToInflux(**kwargs):
     print("called")
     conf = kwargs['dag_run'].conf
 
-    liveClassId = conf.get('live_class_id', None)
+    examId = conf.get('exam_id', None)
+    examType = conf.get('exam_type', None)
     catalogProductId = conf.get("catalog_product_id", None)
     catalogSkuId = conf.get("catalog_sku_id", None)
     programId = conf.get("program_id", None)
     courseId = conf.get("course_id", None)
-    mediaType = "live_class"
     platform = conf.get("platform", None)
-    identificationType = "live_class"
-    identificationId = conf.get('live_class_id', None)
 
     # print("Remotely received value of {} for key=message".
     # format(kwargs['dag_run'].conf['session_id']))
 
     print("type ", type(conf))
-    if liveClassId is None:
-        raise ValueError("live_class_id is required in conf")
+    if examId is None:
+        raise ValueError("exam_id is required in conf")
 
-    print("running for liveclass id ", liveClassId)
+    print("running for exam id ", examId)
     print("catalog product id ", catalogProductId)
     print("catalog sku id ", catalogSkuId)
     print("program id ", programId)
@@ -77,28 +75,30 @@ def syncMongoDataToInflux(**kwargs):
     # if not testConnectionRes[0]:
     #     raise Exception("Cannot connect to Mongodb")
 
-    userActivityMongoDb = mongoClient[MONGO_DB_NAME]
-    userActivitiesCollection = userActivityMongoDb.get_collection("users_watch_activities")
+    examServiceDB = mongoClient[MONGO_DB_NAME]
+    userSessionsCollection = examServiceDB.get_collection("user-sessions")
 
     points = []
     count = 0
 
-    for userActivity in userActivitiesCollection.find(
-            {"live_class_id": liveClassId, "joining_at": {"$ne": None}, "leaving_at": {"$ne": None}}):
-        playHeadStartAt: datetime = userActivity["joining_at"]
-        playHeadEndAt: datetime = userActivity["leaving_at"]
+    for examSession in userSessionsCollection.find(
+            {"exam_id": examId, "status": "end"}):
+        startAtTime: datetime = examSession["start_at"]
+        endAtTime: datetime = examSession["end_at"]
 
-        point = Point.measurement(INFLUX_DB_MEASUREMENT).tag("media_id", liveClassId).tag("auth_user_id",
-                                                                                          userActivity[
-                                                                                              "auth_user_id"]).tag(
+        point = Point.measurement(INFLUX_DB_MEASUREMENT).tag("exam_id", examId).tag("auth_user_id",
+                                                                                    examSession[
+                                                                                        "auth_user_id"]).tag(
             "catalog_product_id", catalogProductId).tag("catalog_sku_id", catalogSkuId).tag("program_id",
                                                                                             programId).tag(
-            "course_id", courseId).tag("media_type", mediaType).tag("identification_id", identificationId).tag(
-            "identification_type", identificationType).tag("platform", platform).field("playhead_start_at",
-                                                                                       int(playHeadStartAt.timestamp() * 1000)).field(
-            "playhead_end_at", int(playHeadEndAt.timestamp() * 1000)).field("duration",
-                                                                            userActivity["watch_time"]).time(
-            playHeadStartAt)
+            "course_id", courseId).tag("platform", platform).tag("session", examSession["_id"]).tag(
+            "type", examType).field("time_taken",
+                                    examSession["time_taken"]).field(
+            "total_answers", examSession["total_answers"]).field("total_correct_answers",
+                                                                 examSession["total_correct_answers"]).field(
+            "total_questions", examSession["total_questions"]).field("total_score", examSession["total_score"]).field(
+            "start_at", int(startAtTime.timestamp() * 1000)).field("end_at", int(endAtTime.timestamp() * 1000)).time(
+            startAtTime)
         points.append(point)
         count += 1
         if len(points) == BATCH_SIZE:
@@ -115,6 +115,6 @@ def syncMongoDataToInflux(**kwargs):
         time.sleep(DELAY_SEC)
 
 
-with DAG(dag_id="live_class_user_activity_to_influx_db_etl", default_args=default_args,
+with DAG(dag_id="exam_session_to_influx_db_etl", default_args=default_args,
          schedule_interval=None) as dag:
     syncMongoDataToInflux()
