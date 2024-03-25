@@ -104,8 +104,8 @@ def execute_query_and_fetch_result():
                 .tag("initiated_member_id", initiated_member_id) \
                 .tag("conversation_id", conversation_id) \
                 .field("session_id", session_id) \
-                .field("start_at", start_at) \
-                .field("end_at", start_at) \
+                .field("start_at", int(start_at.timestamp() * 1000)) \
+                .field("end_at", int(end_at.timestamp() * 1000)) \
                 .field("resolved_at", 100) \
                 .field("rating_type", rating_type) \
                 .field("rating_value", rating_value) \
