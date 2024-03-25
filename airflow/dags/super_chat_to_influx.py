@@ -8,6 +8,8 @@ from airflow.providers.influxdb.hooks.influxdb import InfluxDBClient, Point
 from influxdb_client.client.write_api import WriteOptions, SYNCHRONOUS
 from airflow.models import Variable
 
+INFLUX_DB_MEASUREMENT = "doubt_solve_records"
+
 default_args = {
     "owner": "Papa Tiger",
     "start_date": datetime(2024, 3, 24),
