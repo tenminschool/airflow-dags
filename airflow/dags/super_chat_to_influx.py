@@ -105,7 +105,7 @@ def execute_query_and_fetch_result():
                 .tag("conversation_id", conversation_id) \
                 .field("session_id", session_id) \
                 .field("start_at", start_at) \
-                .field("end_at", end_at) \
+                .field("end_at", start_at) \
                 .field("resolved_at", 100) \
                 .field("rating_type", rating_type) \
                 .field("rating_value", rating_value) \
