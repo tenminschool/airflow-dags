@@ -28,7 +28,7 @@ def init_syncing_super_chat_data(**kwargs):
                  f"{media_type}, {platform}, {identification_type}, {identification_id}")
 
 def generate_postgres_query():
-    live_class_id = '1naPAnx4w1' 
+    live_class_id = 'JUxBRrfy7f' 
     sql_query = f"""
     SELECT sessions."createdAt" as start_at, sessions.id, conversation_id, identification_type, identification_id, resolved_at as end_at,
        thread_id, initiated_member_id, members.auth_user_id, rating_type, rating_value, sessions.status
