@@ -71,7 +71,8 @@ def execute_query_and_fetch_result():
         ping_res = influxClient.ping()
         if not ping_res:
             raise ValueError("Cannot connect to InfluxDB")
-            
+            # tags	liveclass_id	auth_user_id	thread_id	catalog_prod_id	catalog_sku_id	program_id	course_id	platform	status	
+            # fields	session_id	start_at	end_at	resolved_at	rating_type	rating_value																																		
         for row in results:
                 start_at = row[0]
                 session_id = row[1]
@@ -86,18 +87,31 @@ def execute_query_and_fetch_result():
                 rating_value = row[10]
                 status = row[11]
                 
-                logging.info(f"start_at: {start_at}")
-                logging.info(f"session_id: {session_id}")
-                logging.info(f"conversation_id: {conversation_id}")
-                logging.info(f"identification_type: {identification_type}")
-                logging.info(f"identification_id: {identification_id}")
-                logging.info(f"end_at: {end_at}")
-                logging.info(f"thread_id: {thread_id}")
-                logging.info(f"initiated_member_id: {initiated_member_id}")
-                logging.info(f"auth_user_id: {auth_user_id}")
-                logging.info(f"rating_type: {rating_type}")
-                logging.info(f"rating_value: {rating_value}")
-                logging.info(f"status: {status}")
+                point = Point.measurement(INFLUX_DB_MEASUREMENT) \
+                    .tag("liveclass_id", identification_id) \
+                    .tag("auth_user_id", auth_user_id) \
+                    .tag("thread_id", thread_id) \
+                    .tag("catalog_product_id", 100) \
+                    .tag("catalog_sku_id", 100) \
+                    .tag("program_id", 100) \
+                    .tag("course_id", 100) \
+                    .tag("platform", 100) \
+                    .tag("status", status) \
+                    .tag("initiated_member_id", initiated_member_id) \
+                    .tag("conversation_id", conversation_id) \
+                    .field("session_id", session_id) \
+                    .field("start_at", start_at) \
+                    .field("end_at", end_at) \
+                    .field("resolved_at", 100) \
+                    .field("rating_type", rating_type) \
+                    .field("rating_value", rating_value) \
+                    .time(start_at)
+
+                points.append(point)
+                count += 1
+
+                logging.info("POINTS:::::::: ", points)
+                logging.info("COUNTs:::: ", count)
 
     except Exception as e:
         logging.error(f"Error executing SQL query: {e}")
