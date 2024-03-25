@@ -69,4 +69,6 @@ with DAG("super_chat_to_influx", default_args=default_args, schedule_interval=No
         python_callable=generate_postgres_query,
     )
 
+    logging.info("Got Query From Query Task: ", query_task)
+
     init_task >> ping_db >> query_task 
