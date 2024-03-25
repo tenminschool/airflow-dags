@@ -112,8 +112,8 @@ def execute_query_and_fetch_result():
                 points.append(point)
                 count += 1
 
-                logging.info("POINTS:::::::: ", points)
-                logging.info("COUNTs:::: ", count)
+        logging.info("POINTS:::::::: ", points)
+        logging.info("COUNTs:::: ", count)
 
     except Exception as e:
         logging.error(f"Error executing SQL query: {e}")
