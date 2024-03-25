@@ -17,4 +17,4 @@ with DAG(
         dag_id="superchat_to_influx", 
         default_args=default_args, 
         schedule_interval=None) as dag:
-sync_super_chat_data()
+    sync_super_chat_data()
