@@ -19,7 +19,7 @@ INFLUXDB_BUCKET_NAME = Variable.get("INFLUX_DB_TRACKER_DB_NAME")
 INFLUX_DB_MEASUREMENT = "exam_users"
 
 BATCH_SIZE = 100
-DELAY_SEC = 1
+DELAY_SEC = 3
 
 options = WriteOptions(
     batch_size=100,
