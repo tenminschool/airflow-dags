@@ -3,6 +3,7 @@ from datetime import datetime
 
 from airflow.decorators import dag, task
 from airflow.operators.python import PythonOperator
+from airflow.hooks.postgres_hook import PostgresHook
 
 default_args = {
     "owner": "Papa Tiger",
@@ -41,11 +42,25 @@ def generate_postgres_query():
     logging.info(sql_query)
     return sql_query
 
+def ping_postgres():
+    try: 
+        postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
+        result = postgres_hook.get_first("SELECT 1")
+
+        if result: 
+            logging.info("PostgreSQL database is reachable.")
+        else:
+            logging.error("PostgreSQL database did not respond.")
+    except Exception as e:
+        logging.error(f"Error pinging PostgreSQL database: {e}")
+
+
 @dag("super_chat_to_influx", default_args=default_args, schedule_interval=None)
 def dag_definition():
     init_task = init_syncing_super_chat_data()
+    ping_db = ping_postgres()
     query_task = generate_postgres_query()
 
-    init_task >> query_task  # Define task dependencies
+    init_task >> ping_db >> query_task 
 
 dag_instance = dag_definition()
