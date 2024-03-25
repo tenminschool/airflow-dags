@@ -4,6 +4,9 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.hooks.postgres_hook import PostgresHook
+from airflow.providers.influxdb.hooks.influxdb import InfluxDBClient, Point
+from influxdb_client.client.write_api import WriteOptions, SYNCHRONOUS
+from airflow.models import Variable
 
 default_args = {
     "owner": "Papa Tiger",
@@ -28,14 +31,6 @@ def init_syncing_super_chat_data(**kwargs):
                  f"{media_type}, {platform}, {identification_type}, {identification_id}")
 
 def generate_postgres_query():
-
-    # conf = kwargs['dag_run'].conf
-    # live_class_id = conf.get('live_class_id', None)
-    # catalog_product_id = conf.get("catalog_product_id", None)
-    # catalog_sku_id = conf.get("catalog_sku_id", None)
-    # program_id = conf.get("program_id", None)
-    # course_id = conf.get("course_id", None)
-    # platform = conf.get("platform", None)
     
     sql_query = f"""
     SELECT 
@@ -68,14 +63,27 @@ def generate_postgres_query():
 
 
 def execute_query_and_fetch_result():
+    points = []
+    count = 0
+
     try:
         sql_query = generate_postgres_query()
         postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
         
         results = postgres_hook.get_records(sql_query)
+        """
+        Code from TS:
+        """
+        influxClient = InfluxDBClient(url=Variable.get("INFLUX_DB_URL"),token=Variable.get("INFLUX_DB_TOKEN"),org=Variable.get("INFLUX_DB_ORG"))
 
+        ping_res = influxClient.ping()
+        if not ping_res:
+            raise ValueError("Cannot connect to InfluxDB")
+        
+        # tags	liveclass_id	auth_user_id	thread_id	catalog_prod_id	catalog_sku_id	program_id	course_id	platform	status
         for row in results:
-            logging.info(row) 
+            
+            logging.info(row.thread_id) 
     except Exception as e:
         logging.error(f"Error executing SQL query: {e}")
 
