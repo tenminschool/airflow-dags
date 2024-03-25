@@ -31,7 +31,6 @@ def init_syncing_super_chat_data(**kwargs):
                  f"{media_type}, {platform}, {identification_type}, {identification_id}")
 
 def generate_postgres_query():
-    
     sql_query = f"""
     SELECT 
         sessions."createdAt" as start_at, 
@@ -52,13 +51,6 @@ def generate_postgres_query():
     WHERE sessions.identification_type = 'live_class' 
     AND identification_id = 'JUxBRrfy7f';
     """
-    # '{live_class_id}' as live_class_id,
-    # '{catalog_product_id}' as catalog_product_id,
-    # '{catalog_sku_id}' as catalog_sku_id,
-    # '{program_id}' as program_id,
-    # '{course_id}' as course_id,
-    # '{platform}' as platform
-    # AND identification_id = '{live_class_id}';
     return sql_query
 
 
@@ -79,9 +71,33 @@ def execute_query_and_fetch_result():
         ping_res = influxClient.ping()
         if not ping_res:
             raise ValueError("Cannot connect to InfluxDB")
-        
+            
         for row in results:
-            logging.info(row) 
+                start_at = row[0]
+                session_id = row[1]
+                conversation_id = row[2]
+                identification_type = row[3]
+                identification_id = row[4]
+                end_at = row[5]
+                thread_id = row[6]
+                initiated_member_id = row[7]
+                auth_user_id = row[8]
+                rating_type = row[9]
+                rating_value = row[10]
+                status = row[11]
+                
+                logging.info(f"start_at: {start_at}")
+                logging.info(f"session_id: {session_id}")
+                logging.info(f"conversation_id: {conversation_id}")
+                logging.info(f"identification_type: {identification_type}")
+                logging.info(f"identification_id: {identification_id}")
+                logging.info(f"end_at: {end_at}")
+                logging.info(f"thread_id: {thread_id}")
+                logging.info(f"initiated_member_id: {initiated_member_id}")
+                logging.info(f"auth_user_id: {auth_user_id}")
+                logging.info(f"rating_type: {rating_type}")
+                logging.info(f"rating_value: {rating_value}")
+                logging.info(f"status: {status}")
 
     except Exception as e:
         logging.error(f"Error executing SQL query: {e}")
