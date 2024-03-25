@@ -57,4 +57,4 @@ with DAG(dag_id="superchat_to_influx", default_args=default_args, schedule_inter
     #     sql=task_sync_super_chat_data.output,
     # )
     # >> task_run_query
-    task_sync_super_chat_data
+    task_sync_super_chat_data()
