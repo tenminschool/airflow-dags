@@ -28,26 +28,35 @@ def init_syncing_super_chat_data(**kwargs):
                  f"{media_type}, {platform}, {identification_type}, {identification_id}")
 
 def generate_postgres_query():
-    sql_query = """
+    live_class_id = '1naPAnx4w1' 
+    sql_query = f"""
     SELECT sessions."createdAt" as start_at, sessions.id, conversation_id, identification_type, identification_id, resolved_at as end_at,
        thread_id, initiated_member_id, members.auth_user_id, rating_type, rating_value, sessions.status
     FROM sessions
     INNER JOIN members ON sessions.initiated_member_id = members.id
-    WHERE sessions.identification_type = 'live_class' AND identification_id = '1naPAnx4w1';
+    WHERE sessions.identification_type = 'live_class' AND identification_id = '{live_class_id}';
     """
-
-    logging.info("Executing SQL query:")
-    logging.info(sql_query)
     return sql_query
+
+def execute_query_and_fetch_result():
+    try:
+        sql_query = generate_postgres_query()
+        postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
+        
+        results = postgres_hook.get_records(sql_query)
+
+        for row in results:
+            logging.info(row) 
+    except Exception as e:
+        logging.error(f"Error executing SQL query: {e}")
 
 def ping_postgres():
     try: 
         postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
-        result = postgres_hook.get_first(generate_postgres_query)
+        result = postgres_hook.get_first("SELECT 1")
 
         if result: 
             logging.info("PostgreSQL database is reachable.")
-            logging.info(result)
         else:
             logging.error("PostgreSQL database did not respond.")
     except Exception as e:
@@ -64,12 +73,10 @@ with DAG("super_chat_to_influx", default_args=default_args, schedule_interval=No
         task_id='ping_db',
         python_callable=ping_postgres, 
     )
-    
-    query_task = PythonOperator(
-        task_id='query_task',
-        python_callable=generate_postgres_query,
+
+    execute_query_task = PythonOperator(
+        task_id='execute_query_task',
+        python_callable=execute_query_and_fetch_result,
     )
 
-    logging.info("Got Query From Query Task: ", query_task)
-
-    init_task >> ping_db >> query_task 
+    init_task >> ping_db >> execute_query_task 
