@@ -13,5 +13,8 @@ default_args = {
 def sync_super_chat_data(**kwargs):
     print("called sync_super_chat_data")
 
-with DAG(dag_id="superchat_to_influx", default_args=default_args, schedule_interval=None) as dag:
-    sync_super_chat_data()
+with DAG(
+        dag_id="superchat_to_influx", 
+        default_args=default_args, 
+        schedule_interval=None) as dag:
+sync_super_chat_data()
