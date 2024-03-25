@@ -88,7 +88,7 @@ def syncMongoDataToInflux(**kwargs):
 
         point = Point.measurement(INFLUX_DB_MEASUREMENT).tag("exam_id", examId).tag("auth_user_id",
                                                                                     examSession[
-                                                                                        "auth_user_id"]).tag(
+                                                                                        "user_id"]).tag(
             "catalog_product_id", catalogProductId).tag("catalog_sku_id", catalogSkuId).tag("program_id",
                                                                                             programId).tag(
             "course_id", courseId).tag("platform", platform).tag("session", examSession["_id"]).tag(
