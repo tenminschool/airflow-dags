@@ -69,9 +69,7 @@ def execute_query_and_fetch_result():
         postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
         
         results = postgres_hook.get_records(sql_query)
-        """
-        Code from TS:
-        """
+        
         influxClient = InfluxDBClient(url=Variable.get("INFLUX_DB_URL"),token=Variable.get("INFLUX_DB_TOKEN"),org=Variable.get("INFLUX_DB_ORG"))
 
         ping_res = influxClient.ping()
