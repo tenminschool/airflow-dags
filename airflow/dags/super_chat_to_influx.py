@@ -43,10 +43,11 @@ def generate_postgres_query():
 def ping_postgres():
     try: 
         postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
-        result = postgres_hook.get_first("SELECT 1")
+        result = postgres_hook.get_first(generate_postgres_query)
 
         if result: 
             logging.info("PostgreSQL database is reachable.")
+            logging.info(result)
         else:
             logging.error("PostgreSQL database did not respond.")
     except Exception as e:
