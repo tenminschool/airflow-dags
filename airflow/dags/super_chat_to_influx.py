@@ -80,10 +80,9 @@ def execute_query_and_fetch_result():
         if not ping_res:
             raise ValueError("Cannot connect to InfluxDB")
         
-        # tags	liveclass_id	auth_user_id	thread_id	catalog_prod_id	catalog_sku_id	program_id	course_id	platform	status
         for row in results:
-            
-            logging.info(row[6].thread_id) 
+            logging.info("Thread ID : ", row[6]) 
+
     except Exception as e:
         logging.error(f"Error executing SQL query: {e}")
 
