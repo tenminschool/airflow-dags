@@ -7,6 +7,7 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.influxdb.hooks.influxdb import InfluxDBClient, Point
 from influxdb_client.client.write_api import WriteOptions, SYNCHRONOUS
 from airflow.models import Variable
+from airflow.operators.email import EmailOperator
 
 INFLUXDB_BUCKET_NAME = "tracker_stage_db"
 INFLUX_DB_MEASUREMENT = "doubt_solve_records"
@@ -16,7 +17,9 @@ DELAY_SEC = 3
 default_args = {
     "owner": "Papa Tiger",
     "start_date": datetime(2024, 3, 24),
-    "retries": 1
+    "retries": 1,
+    "email": ["osman@10minuteschool.com"],
+    "email_on_failure": True,
 }
 
 '''
@@ -175,4 +178,13 @@ with DAG("super_chat_to_influx", default_args=default_args, schedule_interval=No
         provide_context=True,
     )
 
-    init_task >> ping_db >> execute_query_task 
+    email_on_failure = EmailOperator(
+        task_id='email_on_failure',
+        to=default_args["email"],
+        subject='Airflow Alert: Task Failed',
+        html_content='<p>Superchat to InfluxDB task in our DAG has failed. Please check the Airflow UI for more details.</p>',
+        trigger_rule='one_failed', 
+    )
+
+    init_task >> ping_db 
+    ping_db >> execute_query_task >> email_on_failure
