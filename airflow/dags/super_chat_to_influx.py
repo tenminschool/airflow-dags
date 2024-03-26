@@ -146,7 +146,7 @@ def execute_query_and_fetch_result(**kwargs):
 
 def ping_postgres():
     try: 
-        postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
+        postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage0")
         result = postgres_hook.get_first("SELECT 1")
 
         if result: 
