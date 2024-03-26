@@ -27,7 +27,6 @@ TO DO:
 '''
 
 def init_syncing_super_chat_data(**kwargs):
-    logging.info("Called sync_super_chat_data")
     conf = kwargs['dag_run'].conf
     live_class_id = conf.get('live_class_id', None)
     catalog_product_id = conf.get("catalog_product_id", None)
@@ -35,13 +34,13 @@ def init_syncing_super_chat_data(**kwargs):
     program_id = conf.get("program_id", None)
     course_id = conf.get("course_id", None)
     platform = conf.get("platform", None)
-    identification_type = "live_class"
-    identification_id = live_class_id
 
-    logging.info(f"Parameters: {live_class_id}, {catalog_product_id}, {catalog_sku_id}, {program_id}, {course_id}, {platform}, {identification_type}, {identification_id}")
-    
-    return live_class_id, catalog_product_id, catalog_sku_id, program_id, course_id, platform, identification_type, identification_id
-
+    kwargs['ti'].xcom_push(key='live_class_id', value=live_class_id)
+    kwargs['ti'].xcom_push(key='catalog_product_id', value=catalog_product_id)
+    kwargs['ti'].xcom_push(key='catalog_sku_id', value=catalog_sku_id)
+    kwargs['ti'].xcom_push(key='program_id', value=program_id)
+    kwargs['ti'].xcom_push(key='course_id', value=course_id)
+    kwargs['ti'].xcom_push(key='platform', value=platform)
 
 def generate_postgres_query():
     sql_query = f"""
@@ -73,6 +72,15 @@ def execute_query_and_fetch_result():
     count = 0
 
     try:
+        live_class_id = kwargs['ti'].xcom_pull(key='live_class_id', task_ids='init_task')
+        catalog_product_id = kwargs['ti'].xcom_pull(key='catalog_product_id', task_ids='init_task')
+        catalog_sku_id = kwargs['ti'].xcom_pull(key='catalog_sku_id', task_ids='init_task')
+        program_id = kwargs['ti'].xcom_pull(key='program_id', task_ids='init_task')
+        course_id = kwargs['ti'].xcom_pull(key='course_id', task_ids='init_task')
+        platform = kwargs['ti'].xcom_pull(key='platform', task_ids='init_task')
+
+        logging.info(f"Received parameters: {live_class_id}, {catalog_product_id}, {catalog_sku_id}, {program_id}, {course_id}, {platform}")
+
         sql_query = generate_postgres_query()
         postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
         
@@ -155,6 +163,7 @@ with DAG("super_chat_to_influx", default_args=default_args, schedule_interval=No
     init_task = PythonOperator(
         task_id='init_task',
         python_callable=init_syncing_super_chat_data,
+        provide_context=True,
     )
     
     ping_db = PythonOperator(
@@ -165,6 +174,7 @@ with DAG("super_chat_to_influx", default_args=default_args, schedule_interval=No
     execute_query_task = PythonOperator(
         task_id='execute_query_task',
         python_callable=execute_query_and_fetch_result,
+        provide_context=True,
     )
 
     init_task >> ping_db >> execute_query_task 
