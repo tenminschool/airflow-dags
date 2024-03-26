@@ -79,8 +79,6 @@ def execute_query_and_fetch_result(**kwargs):
         course_id = kwargs['ti'].xcom_pull(key='course_id', task_ids='init_task')
         platform = kwargs['ti'].xcom_pull(key='platform', task_ids='init_task')
 
-        logging.info(f"Received parameters: {live_class_id}, {catalog_product_id}, {catalog_sku_id}, {program_id}, {course_id}, {platform}")
-
         sql_query = generate_postgres_query(live_class_id)
         postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
         
@@ -110,18 +108,18 @@ def execute_query_and_fetch_result(**kwargs):
                 .tag("liveclass_id", identification_id) \
                 .tag("auth_user_id", auth_user_id) \
                 .tag("thread_id", thread_id) \
-                .tag("catalog_product_id", 100) \
-                .tag("catalog_sku_id", 100) \
-                .tag("program_id", 100) \
-                .tag("course_id", 100) \
-                .tag("platform", 100) \
+                .tag("catalog_product_id", catalog_product_id) \
+                .tag("catalog_sku_id", catalog_sku_id) \
+                .tag("program_id", program_id) \
+                .tag("course_id", course_id) \
+                .tag("platform", platform) \
                 .tag("status", status) \
                 .tag("initiated_member_id", initiated_member_id) \
                 .tag("conversation_id", conversation_id) \
                 .field("session_id", session_id) \
                 .field("start_at", int(start_at.timestamp() * 1000)) \
                 .field("end_at", int(end_at.timestamp() * 1000)) \
-                .field("resolved_at", 100) \
+                .field("resolved_at", int(start_at.timestamp() * 1000)) \
                 .field("rating_type", rating_type) \
                 .field("rating_value", rating_value) \
                 .time(start_at)
