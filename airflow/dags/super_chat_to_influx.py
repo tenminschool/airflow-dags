@@ -19,6 +19,13 @@ default_args = {
     "retries": 1
 }
 
+'''
+TO DO: 
+1. Make dynamic the live class data fetching
+2. ping influx db in different
+3. make different function for influx data insert
+'''
+
 def init_syncing_super_chat_data(**kwargs):
     logging.info("Called sync_super_chat_data")
     conf = kwargs['dag_run'].conf
