@@ -67,7 +67,7 @@ def generate_postgres_query():
     return sql_query
 
 
-def execute_query_and_fetch_result():
+def execute_query_and_fetch_result(**kwargs):
     points = []
     count = 0
 
