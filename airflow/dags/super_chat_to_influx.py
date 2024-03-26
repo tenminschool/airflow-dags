@@ -28,19 +28,21 @@ TO DO:
 
 def init_syncing_super_chat_data(**kwargs):
     logging.info("Called sync_super_chat_data")
+
+
+def catch_dag_api(**kwargs):
     conf = kwargs['dag_run'].conf
     live_class_id = conf.get('live_class_id', None)
     catalog_product_id = conf.get("catalog_product_id", None)
     catalog_sku_id = conf.get("catalog_sku_id", None)
     program_id = conf.get("program_id", None)
     course_id = conf.get("course_id", None)
-    media_type = "live_class"
     platform = conf.get("platform", None)
     identification_type = "live_class"
     identification_id = live_class_id
 
-    logging.info(f"Parameters: {live_class_id}, {catalog_product_id}, {catalog_sku_id}, {program_id}, {course_id}, "
-                 f"{media_type}, {platform}, {identification_type}, {identification_id}")
+    # logging.info(f"Parameters: {live_class_id}, {catalog_product_id}, {catalog_sku_id}, {program_id}, {course_id}, {platform}, {identification_type}, {identification_id}")
+    return live_class_id, catalog_product_id, catalog_sku_id, program_id, course_id, platform, identification_type, identification_id
 
 def generate_postgres_query():
     sql_query = f"""
@@ -72,6 +74,8 @@ def execute_query_and_fetch_result():
     count = 0
 
     try:
+        dag_body = catch_dag_api()
+        logging.info(dag_body)
         sql_query = generate_postgres_query()
         postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
         
