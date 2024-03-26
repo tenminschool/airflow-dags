@@ -42,7 +42,7 @@ def init_syncing_super_chat_data(**kwargs):
     kwargs['ti'].xcom_push(key='course_id', value=course_id)
     kwargs['ti'].xcom_push(key='platform', value=platform)
 
-def generate_postgres_query():
+def generate_postgres_query(live_class_id):
     sql_query = f"""
     SELECT 
         sessions."createdAt" as start_at, 
@@ -62,7 +62,7 @@ def generate_postgres_query():
     INNER JOIN members ON sessions.initiated_member_id = members.id
     WHERE resolved_at is not null 
     AND sessions.identification_type = 'live_class' 
-    AND identification_id = '7j9vBbSCGE';
+    AND identification_id = '{live_class_id}';
     """
     return sql_query
 
@@ -81,7 +81,7 @@ def execute_query_and_fetch_result(**kwargs):
 
         logging.info(f"Received parameters: {live_class_id}, {catalog_product_id}, {catalog_sku_id}, {program_id}, {course_id}, {platform}")
 
-        sql_query = generate_postgres_query()
+        sql_query = generate_postgres_query(live_class_id)
         postgres_hook = PostgresHook(postgres_conn_id="postgres_connection_stage")
         
         results = postgres_hook.get_records(sql_query)
