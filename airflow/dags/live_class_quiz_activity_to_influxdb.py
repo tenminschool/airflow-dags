@@ -19,7 +19,7 @@ default_args = {
 INFLUXDB_BUCKET_NAME = "tracker_stage_db"
 INFLUX_DB_MEASUREMENT = "quiz_participants"
 
-DELAY_SEC = 3
+DELAY_SEC = 1
 
 
 def getQuizzes(liveClassId, connection):
@@ -32,6 +32,19 @@ def getQuizzes(liveClassId, connection):
 
     sql_query = f"SELECT * FROM quizzes WHERE live_class_id = '{liveClassNumericId}'"
     df = pd.read_sql(sql_query, connection)
+    return df
+
+
+def getQuizResponses(quizIds: list, page, limit, connection):
+    offset = (page - 1) * limit
+
+    placeholders = ','.join(['%s' for _ in quizIds])
+    sql_query = f"SELECT quiz_responses.createdAt as createdAt, auth_user_id, quiz_id, quiz_option_id, is_correct, time_taken,quiz_modality FROM quiz_responses LEFT JOIN users u on u.id = quiz_responses.user_id WHERE quiz_id IN ({placeholders}) LIMIT {limit} OFFSET {offset}"
+
+    # Print the SQL query for debugging
+    print("sql_query:", sql_query)
+
+    df = pd.read_sql_query(sql_query, params=quizIds, con=connection)
     return df
 
 
@@ -91,19 +104,18 @@ def syncLiveClassQuizToInfluxDB(**kwargs):
     quizzes = getQuizzes(liveClassId, connection)
     quizIds = quizzes["id"].values
 
-    placeholders = ','.join(['%s' for _ in quizIds])
+    page = 1
+    limit = 500
 
-    # Construct the SQL query with the correct number of placeholders
-    sql_query = f"SELECT quiz_responses.createdAt as createdAt, auth_user_id, quiz_id, quiz_option_id, is_correct, time_taken,quiz_modality FROM quiz_responses LEFT JOIN users u on u.id = quiz_responses.user_id WHERE quiz_id IN ({placeholders})"
-
-    # Print the SQL query for debugging
-    print("sql_query:", sql_query)
-
-    df = pd.read_sql_query(sql_query, params=quizIds, con=connection)
-
-    transformedData = transformQuizzes(df, liveClassId, catalogProductId, catalogSkuId, programId, courseId, platform)
-
-    writeToInfluxDb(transformedData, influxClient)
+    while True:
+        print("page ", page)
+        df = getQuizResponses(quizIds, page, limit, connection)
+        if len(df) == 0:
+            break
+        transformedData = transformQuizzes(df, liveClassId, catalogProductId, catalogSkuId, programId, courseId,
+                                           platform)
+        writeToInfluxDb(transformedData, influxClient)
+        page += 1
 
 
 with DAG(dag_id="live_class_quiz_activity_to_influx_db_etl", default_args=default_args,
