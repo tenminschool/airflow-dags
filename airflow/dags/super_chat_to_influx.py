@@ -62,7 +62,7 @@ def generate_postgres_query():
     INNER JOIN members ON sessions.initiated_member_id = members.id
     WHERE resolved_at is not null 
     AND sessions.identification_type = 'live_class' 
-    AND identification_id = 'JUxBRrfy7f';
+    AND identification_id = '7j9vBbSCGE';
     """
     return sql_query
 
