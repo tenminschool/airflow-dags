@@ -6,6 +6,7 @@ from airflow.models import Variable
 from airflow.models.dag import DAG
 from influxdb_client_3 import InfluxDBClient3
 from pandas import DataFrame
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -61,7 +62,7 @@ def getTransformedData(quizDf: DataFrame):
         data['total_quiz_submitted'].append(row["total_quiz_submitted"])
         data['total_quiz_corrected'].append(row["total_quiz_corrected"])
 
-    return data
+    return pd.DataFrame(data)
 
 
 @task()
@@ -70,9 +71,11 @@ def syncInfluxQuizDataToPostgres(**kwargs):
     client = InfluxDBClient3(host=Variable.get("INFLUX_DB_URL"), token=Variable.get("INFLUX_DB_TOKEN"),
                              org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
 
+    postgresHook = PostgresHook().get_hook(conn_id="postgres_connection_stage")
+
     quizDf = getQuizData(client)
     transformedDf = getTransformedData(quizDf)
-    print(transformedDf)
+    print("test result ", postgresHook.test_connection())
 
 
 with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args,
