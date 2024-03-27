@@ -1,12 +1,11 @@
 from datetime import datetime
 
+import pandas as pd
 from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import DAG
 from influxdb_client_3 import InfluxDBClient3
-import pandas as pd
 from pandas import DataFrame
-import numpy as np
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -16,7 +15,7 @@ default_args = {
 
 
 def getQuizData(client: InfluxDBClient3):
-    query = """SELECT auth_user_id, COUNT(quiz_id) as quiz_submitted, SUM(is_correct) as quiz_corrected
+    query = """SELECT auth_user_id, COUNT(quiz_id) as total_quiz_submitted, SUM(is_correct) as total_quiz_corrected
        FROM quiz_participants
        WHERE time >= now() - interval '365 day'
          AND (modality='m1' OR modality='m5')
@@ -40,11 +39,29 @@ def getPollData(client: InfluxDBClient3):
     return pd.DataFrame(reader.to_pandas())
 
 
-def getTransformedData(quizDf: DataFrame, pollDf: DataFrame):
-    uniqueAuthUserIdInQuiz = set(quizDf['auth_user_id'])
-    uniqueAuthUserIdInPoll = set(pollDf['auth_user_id'])
+def getDay():
+    current_time = datetime.now()
 
-    print(uniqueAuthUserIdInQuiz.union(uniqueAuthUserIdInPoll))
+    # Get start of the day (midnight)
+    start_of_day = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    print("Start of the day:", start_of_day)
+    return start_of_day
+
+
+def getTransformedData(quizDf: DataFrame):
+    data = {'auth_user_id': [],
+            'day': [],
+            'total_quiz_submitted': [],
+            'total_quiz_corrected': []}
+
+    for index, row in quizDf.iterrows():
+        data['auth_user_id'].append(row['auth_user_id'])
+        data['day'].append(getDay())
+        data['total_quiz_submitted'].append(row["total_quiz_submitted"])
+        data['total_quiz_corrected'].append(row["total_quiz_corrected"])
+
+    return data
 
 
 @task()
@@ -54,8 +71,7 @@ def syncInfluxQuizDataToPostgres(**kwargs):
                              org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
 
     quizDf = getQuizData(client)
-    pollDf = getPollData(client)
-    transformedDf = getTransformedData(quizDf, pollDf)
+    transformedDf = getTransformedData(quizDf)
     print(transformedDf)
 
 
