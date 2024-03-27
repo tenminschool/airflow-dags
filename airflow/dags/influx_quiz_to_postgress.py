@@ -25,7 +25,7 @@ def syncInfluxQuizDataToPostgres(**kwargs):
     if not pingRes:
         raise ValueError("Cannot connect to InfluxDB")
     else:
-        query = f"SELECT auth_user_id,COUNT(quiz_id) as quiz_submitted, SUM(is_correct) as quiz_corrected FROM quiz_participants WHERE time >= now() - interval '365 day' AND modality='m1' AND auth_user_id is not null GROUP BY auth_user_id"
+        query = f"""SELECT auth_user_id,COUNT(quiz_id) as quiz_submitted, SUM(is_correct) as quiz_corrected FROM quiz_participants WHERE time >= now() - interval '365 day' AND modality='m1' AND auth_user_id is not null GROUP BY auth_user_id"""
         query_api = influxClient.query_api()
         result = query_api.query(query=query)
         print("ROWS : ", result)
