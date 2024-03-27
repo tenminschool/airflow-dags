@@ -20,8 +20,7 @@ def syncInfluxQuizDataToPostgres(**kwargs):
 
     query = "select * from quiz_participants"
     reader = client.query(query=query, language="influxql")
-    table = reader.read_all()
-    print(table.to_pandas().to_markdown())
+    print(reader)
 
 
 
