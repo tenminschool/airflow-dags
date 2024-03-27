@@ -32,7 +32,7 @@ def syncInfluxQuizDataToPostgres(**kwargs):
           |> filter(fn: (r) =>
             r._measurement == "quiz_participants" and
             (r.modality == "m1" or r.modality == "m5") and
-            r.auth_user_id != null
+            r.auth_user_id != ""
           )
           |> group(columns: ["auth_user_id"])
           |> count(column: "quiz_id")
