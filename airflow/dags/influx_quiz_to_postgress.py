@@ -49,15 +49,4 @@ def syncInfluxQuizDataToPostgres(**kwargs):
 
 with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args,
          schedule_interval=None) as dag:
-    query = """SELECT auth_user_id, COUNT(quiz_id) as quiz_submitted, SUM(is_correct) as quiz_corrected
-    FROM quiz_participants
-    WHERE time >= now() - interval '365 day'
-      AND (modality='m1' OR modality='m5')
-      AND auth_user_id IS NOT NULL
-    GROUP BY auth_user_id"""
-    execute_influxql_query = InfluxDBOperator(
-        task_id='execute_influxql_query',
-        influx_conn_id='your_influx_conn_id',  # Specify your InfluxDB connection ID
-        query=query,
-        do_xcom_push=True,  # Set to True if you want to push the query result to XCom
-    )
+    syncInfluxQuizDataToPostgres()
