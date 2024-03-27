@@ -32,6 +32,6 @@ def syncInfluxQuizDataToPostgres(**kwargs):
         print("ROWS : ", result)
 
 
-with DAG(dag_id="influx_quiz_to_postgres", default_args=default_args,
+with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args,
          schedule_interval=None) as dag:
     syncInfluxQuizDataToPostgres()
