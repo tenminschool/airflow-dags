@@ -3,7 +3,7 @@ from datetime import datetime
 from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import DAG
-from influxdb_client.client.influxdb_client import InfluxDBClient
+from airflow.providers.influxdb.hooks.influxdb import InfluxDBClient
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -18,7 +18,6 @@ def syncInfluxQuizDataToPostgres(**kwargs):
     influxClient = InfluxDBClient(url=Variable.get("INFLUX_DB_URL"),
                                   token=Variable.get("INFLUX_DB_TOKEN"),
                                   org=Variable.get("INFLUX_DB_ORG"))
-
     pingRes = influxClient.ping()
     print("INFLUX PING RESPONSE", pingRes)
 
