@@ -86,9 +86,9 @@ def writeQuizData(transformedDf: DataFrame, postgresConnection):
 
 @task()
 def syncInfluxQuizDataToPostgres(**kwargs):
-    print("called")
-    client = InfluxDBClient3(host=Variable.get("INFLUX_DB_URL"), token=Variable.get("INFLUX_DB_TOKEN"),
-                             org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
+    print("called syncInfluxQuizDataToPostgres")
+    influxClient = InfluxDBClient3(host=Variable.get("INFLUX_DB_URL"), token=Variable.get("INFLUX_DB_TOKEN"),
+                                   org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
 
     postgresHook = PostgresHook().get_hook(conn_id="postgres_tenlytics_write_connection_stage")
     postgresConnection = postgresHook.get_conn()
@@ -98,15 +98,19 @@ def syncInfluxQuizDataToPostgres(**kwargs):
     if result:
         print("PostgreSQL database is reachable.")
 
-        quizDf = getQuizData(client)
-        transformedDf = getTransformedData(quizDf)
-
-        writeQuizData(transformedDf, postgresConnection)
+        quizDf = getQuizData(influxClient)
+        transformedQuizDf = getTransformedData(quizDf)
+        writeQuizData(transformedQuizDf, postgresConnection)
 
     else:
         raise ValueError("PostgreSQL database did not respond.")
 
 
+@task()
+def syncInfluxPollDataToPostgres(**kwargs):
+    print("called syncInfluxPollDataToPostgres")
+
+
 with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args,
          schedule_interval=None) as dag:
-    syncInfluxQuizDataToPostgres()
+    syncInfluxQuizDataToPostgres(), syncInfluxPollDataToPostgres()
