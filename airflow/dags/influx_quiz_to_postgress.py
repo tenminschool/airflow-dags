@@ -19,7 +19,12 @@ def syncInfluxQuizDataToPostgres(**kwargs):
     client = InfluxDBClient3(host=Variable.get("INFLUX_DB_URL"), token=Variable.get("INFLUX_DB_TOKEN"),
                              org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
 
-    query = "select * from quiz_participants"
+    query = f"""SELECT auth_user_id, COUNT(quiz_id) as quiz_submitted, SUM(is_correct) as quiz_corrected
+    FROM quiz_participants
+    WHERE time >= now() - interval '365 day'
+      AND (modality='m1' OR modality='m5')
+      AND auth_user_id IS NOT NULL
+    GROUP BY auth_user_id"""
     reader = client.query(query=query, language="influxql")
     df = pd.DataFrame(reader.to_pandas())
     print("df ", df)
