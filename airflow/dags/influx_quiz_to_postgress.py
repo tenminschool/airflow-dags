@@ -71,7 +71,7 @@ def syncInfluxQuizDataToPostgres(**kwargs):
     client = InfluxDBClient3(host=Variable.get("INFLUX_DB_URL"), token=Variable.get("INFLUX_DB_TOKEN"),
                              org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
 
-    postgresHook = PostgresHook().get_hook(conn_id="postgres_connection_stage")
+    postgresHook = PostgresHook().get_hook(conn_id="postgres_write_connection_stage")
 
     quizDf = getQuizData(client)
     transformedDf = getTransformedData(quizDf)
