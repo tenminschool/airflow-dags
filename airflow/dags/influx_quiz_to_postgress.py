@@ -1,12 +1,8 @@
 from datetime import datetime
 
 from airflow.decorators import task
-from airflow.models import Variable
 from airflow.models.dag import DAG
-from airflow.providers.influxdb.hooks.influxdb import InfluxDBClient
-from airflow.providers.influxdb.operators.influxdb import InfluxDBOperator
-from airflow.providers.influxdb.operators.influxdb import InfluxDBHook
-from influxdb_client_3 import InfluxDBClient3, Point
+from influxdb_client_3 import InfluxDBClient3
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -19,32 +15,12 @@ default_args = {
 def syncInfluxQuizDataToPostgres(**kwargs):
     print("called")
 
-    influxClient = InfluxDBClient(url=Variable.get("INFLUX_DB_URL"),
-                                  token=Variable.get("INFLUX_DB_TOKEN"),
-                                  org=Variable.get("INFLUX_DB_ORG"))
-    pingRes = influxClient.ping()
-    print("INFLUX PING RESPONSE", pingRes)
+    client = InfluxDBClient3(token="your-token",
+                             host="your-host",
+                             org="your-org",
+                             database="your-database")
 
-    # Step 2 : Query on measurement Initialize
-    if not pingRes:
-        raise ValueError("Cannot connect to InfluxDB")
-    else:
-        query = '''
-          from(bucket: "tracker_stage_db")
-          |> range(start: -365d)
-          |> filter(fn: (r) =>
-            r._measurement == "quiz_participants" and
-            (r.modality == "m1" or r.modality == "m5") and
-            r.auth_user_id != ""
-          )
-          |> group(columns: ["auth_user_id"])
-          |> count(column: "quiz_id")
-          |> sum(column: "is_correct")
-          |> rename(columns: {count: "quiz_submitted", sum: "quiz_corrected"})
-    '''
-        query_api = influxClient.query_api()
-        result = query_api.query(query=query)
-        print("ROWS : ", result)
+    print(client)
 
 
 with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args,
