@@ -73,6 +73,8 @@ def syncInfluxQuizDataToPostgres(**kwargs):
                              org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
 
     postgresHook = PostgresHook().get_hook(conn_id="postgres_tenlytics_write_connection_stage")
+    postgresConnection = postgresHook.get_conn()
+
     result = postgresHook.get_first("SELECT 1")
 
     if result:
@@ -81,21 +83,17 @@ def syncInfluxQuizDataToPostgres(**kwargs):
         quizDf = getQuizData(client)
         transformedDf = getTransformedData(quizDf)
 
-        insert_task = PostgresOperator(
-            task_id='insert_task',
-            postgres_conn_id='postgres_tenlytics_write_connection_stage',  # Connection ID configured in Airflow
-            sql="""
-                   INSERT INTO user_learning_reports (day, auth_user_id, total_quiz_submitted, total_quiz_corrected)
+        cursor = postgresConnection.cursor()
+        cursor.execute("""INSERT INTO user_learning_reports (day, auth_user_id, total_quiz_submitted, total_quiz_corrected)
 VALUES (%s, %s, %s, %s)
 ON CONFLICT (day, auth_user_id) DO UPDATE SET total_quiz_submitted =user_learning_reports.total_quiz_submitted +
                                                                     EXCLUDED.total_quiz_submitted,
                                               total_quiz_corrected = user_learning_reports.total_quiz_corrected +
-                                                                     EXCLUDED.total_quiz_corrected;
-
-                """,
-            parameters=('2019-01-01', 1, 10, 8),  # Parameters to pass to the query
-        )
-
+                                                                     EXCLUDED.total_quiz_corrected""",
+                       ['2019-01-01', 1, 10, 8])
+        postgresConnection.commit()
+        cursor.close()
+        postgresConnection.close()
 
     else:
         raise ValueError("PostgreSQL database did not respond.")
