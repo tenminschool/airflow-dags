@@ -36,7 +36,7 @@ def syncInfluxQuizDataToPostgres(**kwargs):
   |> group(columns: ["auth_user_id"])
   |> count(column: "quiz_id")
   |> sum(column: "is_correct")
-  |> rename(columns: {count: "quiz_submitted", sum: "quiz_corrected"})"""
+  |> rename(columns: {"count": "quiz_submitted", sum: "quiz_corrected"})"""
         query_api = influxClient.query_api()
         result = query_api.query(query=query)
         print("ROWS : ", result)
