@@ -4,6 +4,7 @@ from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import DAG
 from influxdb_client_3 import InfluxDBClient3
+import pandas as pd
 
 default_args = {
     "owner": "Md. Toufiqul Islam",
@@ -20,8 +21,8 @@ def syncInfluxQuizDataToPostgres(**kwargs):
 
     query = "select * from quiz_participants"
     reader = client.query(query=query, language="influxql")
-    print(reader.to_pandas())
-
+    df = pd.DataFrame(reader.to_pandas())
+    print("df ", df)
 
 
 with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args,
