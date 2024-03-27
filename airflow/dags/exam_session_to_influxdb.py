@@ -16,7 +16,7 @@ default_args = {
 
 MONGO_DB_NAME = Variable.get("EXAM_DB_NAME")
 INFLUXDB_BUCKET_NAME = Variable.get("INFLUX_DB_TRACKER_DB_NAME")
-INFLUX_DB_MEASUREMENT = "exam_users"
+INFLUX_DB_MEASUREMENT = "exam_users_new"
 
 BATCH_SIZE = 100
 DELAY_SEC = 3
