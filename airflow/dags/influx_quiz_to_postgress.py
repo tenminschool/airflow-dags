@@ -41,8 +41,7 @@ def getPollData(client: InfluxDBClient3):
 
 
 def getTransformedData(quizDf: DataFrame, pollDf: DataFrame):
-    userIdSet = np.concatenate(quizDf['auth_user_id'].unique(), pollDf['auth_user_id'].unique())
-    return userIdSet
+    print(quizDf['auth_user_id'].unique(), pollDf['auth_user_id'].unique())
 
 
 @task()
