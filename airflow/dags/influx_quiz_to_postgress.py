@@ -41,7 +41,10 @@ def getPollData(client: InfluxDBClient3):
 
 
 def getTransformedData(quizDf: DataFrame, pollDf: DataFrame):
-    print(quizDf['auth_user_id'].unique(), pollDf['auth_user_id'].unique())
+    uniqueAuthUserIdInQuiz = set(quizDf['auth_user_id'])
+    uniqueAuthUserIdInPoll = set(pollDf['auth_user_id'])
+
+    print(uniqueAuthUserIdInQuiz.union(uniqueAuthUserIdInPoll))
 
 
 @task()
