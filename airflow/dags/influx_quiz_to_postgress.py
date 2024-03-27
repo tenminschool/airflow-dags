@@ -17,7 +17,7 @@ def syncInfluxQuizDataToPostgres(**kwargs):
     print("called")
     influxClient = InfluxDBClient(url=Variable.get("INFLUX_DB_URL"),
                                   token=Variable.get("INFLUX_DB_TOKEN"),
-                                  org=Variable.get("INFLUX_DB_ORG_NAME"))
+                                  org=Variable.get("INFLUX_DB_ORG"))
 
     pingRes = influxClient.ping()
     print("INFLUX PING RESPONSE", pingRes)
