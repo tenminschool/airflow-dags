@@ -66,6 +66,24 @@ def getTransformedData(quizDf: DataFrame):
     return pd.DataFrame(data)
 
 
+def writeQuizData(transformedDf: DataFrame, postgresConnection):
+    cursor = postgresConnection.cursor()
+
+    for index, row in transformedDf.iterrows():
+        query = """INSERT INTO user_learning_reports (day, auth_user_id, total_quiz_submitted, total_quiz_corrected)
+        VALUES (%s, %s, %s, %s)
+        ON CONFLICT (day, auth_user_id) DO UPDATE SET total_quiz_submitted =user_learning_reports.total_quiz_submitted +
+                                                                            EXCLUDED.total_quiz_submitted,
+                                                      total_quiz_corrected = user_learning_reports.total_quiz_corrected +
+                                                                             EXCLUDED.total_quiz_corrected"""
+        cursor.execute(query,
+                       [row["day"], row["auth_user_id"], row["total_quiz_submitted"], row["total_quiz_corrected"]])
+
+    postgresConnection.commit()
+    cursor.close()
+    postgresConnection.close()
+
+
 @task()
 def syncInfluxQuizDataToPostgres(**kwargs):
     print("called")
@@ -83,17 +101,7 @@ def syncInfluxQuizDataToPostgres(**kwargs):
         quizDf = getQuizData(client)
         transformedDf = getTransformedData(quizDf)
 
-        cursor = postgresConnection.cursor()
-        cursor.execute("""INSERT INTO user_learning_reports (day, auth_user_id, total_quiz_submitted, total_quiz_corrected)
-VALUES (%s, %s, %s, %s)
-ON CONFLICT (day, auth_user_id) DO UPDATE SET total_quiz_submitted =user_learning_reports.total_quiz_submitted +
-                                                                    EXCLUDED.total_quiz_submitted,
-                                              total_quiz_corrected = user_learning_reports.total_quiz_corrected +
-                                                                     EXCLUDED.total_quiz_corrected""",
-                       ['2019-01-01', 1, 10, 8])
-        postgresConnection.commit()
-        cursor.close()
-        postgresConnection.close()
+        writeQuizData(transformedDf, postgresConnection)
 
     else:
         raise ValueError("PostgreSQL database did not respond.")
