@@ -19,8 +19,10 @@ def syncInfluxQuizDataToPostgres(**kwargs):
                              org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
 
     query = "select * from quiz_participants"
-    table = client.query(query=query, language="influxql")
-    print(table.to_pandas())
+    reader = client.query(query=query, language="influxql")
+    table = reader.read_all()
+    print(table.to_pandas().to_markdown())
+
 
 
 with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args,
