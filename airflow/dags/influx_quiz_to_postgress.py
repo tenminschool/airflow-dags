@@ -26,17 +26,19 @@ def syncInfluxQuizDataToPostgres(**kwargs):
     if not pingRes:
         raise ValueError("Cannot connect to InfluxDB")
     else:
-        query = f"""from(bucket: "your_bucket")
-  |> range(start: -365d)
-  |> filter(fn: (r) =>
-    r._measurement == "quiz_participants" and
-    (r.modality == "m1" or r.modality == "m5") and
-    r.auth_user_id != null
-  )
-  |> group(columns: ["auth_user_id"])
-  |> count(column: "quiz_id")
-  |> sum(column: "is_correct")
-  |> rename(columns: {"count": "quiz_submitted", sum: "quiz_corrected"})"""
+        query = '''
+        from(bucket: "your_bucket")
+          |> range(start: -365d)
+          |> filter(fn: (r) =>
+            r._measurement == "quiz_participants" and
+            (r.modality == "m1" or r.modality == "m5") and
+            r.auth_user_id != null
+          )
+          |> group(columns: ["auth_user_id"])
+          |> count(column: "quiz_id")
+          |> sum(column: "is_correct")
+          |> rename(columns: {count: "quiz_submitted", sum: "quiz_corrected"})
+    '''
         query_api = influxClient.query_api()
         result = query_api.query(query=query)
         print("ROWS : ", result)
