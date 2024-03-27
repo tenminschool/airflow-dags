@@ -27,7 +27,7 @@ def syncInfluxQuizDataToPostgres(**kwargs):
         raise ValueError("Cannot connect to InfluxDB")
     else:
         query = '''
-        from(bucket: "tracker_stage_db")
+          from(bucket: "tracker_stage_db")
           |> range(start: -365d)
           |> filter(fn: (r) =>
             r._measurement == "quiz_participants" and
@@ -36,7 +36,6 @@ def syncInfluxQuizDataToPostgres(**kwargs):
           )
           |> group(columns: ["auth_user_id"])
           |> count(column: "quiz_id")
-          |> sum(column: "is_correct")
           |> rename(columns: {count: "quiz_submitted", sum: "quiz_corrected"})
     '''
         query_api = influxClient.query_api()
