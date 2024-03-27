@@ -29,7 +29,7 @@ def getQuizData(client: InfluxDBClient3):
 
 
 def getPollData(client: InfluxDBClient3):
-    query = """SELECT auth_user_id, COUNT(quiz_id) as quiz_submitted
+    query = """SELECT auth_user_id, COUNT(quiz_id) as total_poll_submitted
     FROM quiz_participants
     WHERE time >= now() - interval '365 day'
       AND (modality='m2' OR modality='m3' OR modality='m13')
@@ -51,7 +51,7 @@ def getDay():
     return start_of_day
 
 
-def getTransformedData(quizDf: DataFrame):
+def getTransformedQuizData(quizDf: DataFrame):
     data = {'auth_user_id': [],
             'day': [],
             'total_quiz_submitted': [],
@@ -62,6 +62,19 @@ def getTransformedData(quizDf: DataFrame):
         data['day'].append(getDay())
         data['total_quiz_submitted'].append(row["total_quiz_submitted"])
         data['total_quiz_corrected'].append(row["total_quiz_corrected"])
+
+    return pd.DataFrame(data)
+
+
+def getTransformedPollData(pollDf: DataFrame):
+    data = {'auth_user_id': [],
+            'day': [],
+            'total_poll_submitted': []}
+
+    for index, row in pollDf.iterrows():
+        data['auth_user_id'].append(row['auth_user_id'])
+        data['day'].append(getDay())
+        data['total_poll_submitted'].append(row["total_poll_submitted"])
 
     return pd.DataFrame(data)
 
@@ -84,6 +97,22 @@ def writeQuizData(transformedDf: DataFrame, postgresConnection):
     postgresConnection.close()
 
 
+def writePollData(transformedDf: DataFrame, postgresConnection):
+    cursor = postgresConnection.cursor()
+
+    for index, row in transformedDf.iterrows():
+        query = """INSERT INTO user_learning_reports (day, auth_user_id, total_poll_submitted)
+        VALUES (%s, %s, %s)
+        ON CONFLICT (day, auth_user_id) DO UPDATE SET total_poll_submitted =user_learning_reports.total_poll_submitted +
+                                                                            EXCLUDED.total_poll_submitted"""
+        cursor.execute(query,
+                       [row["day"], row["auth_user_id"], row["total_poll_submitted"]])
+
+    postgresConnection.commit()
+    cursor.close()
+    postgresConnection.close()
+
+
 @task()
 def syncInfluxQuizDataToPostgres(**kwargs):
     print("called syncInfluxQuizDataToPostgres")
@@ -99,7 +128,7 @@ def syncInfluxQuizDataToPostgres(**kwargs):
         print("PostgreSQL database is reachable.")
 
         quizDf = getQuizData(influxClient)
-        transformedQuizDf = getTransformedData(quizDf)
+        transformedQuizDf = getTransformedQuizData(quizDf)
         writeQuizData(transformedQuizDf, postgresConnection)
 
     else:
@@ -108,7 +137,23 @@ def syncInfluxQuizDataToPostgres(**kwargs):
 
 @task()
 def syncInfluxPollDataToPostgres(**kwargs):
-    print("called syncInfluxPollDataToPostgres")
+    influxClient = InfluxDBClient3(host=Variable.get("INFLUX_DB_URL"), token=Variable.get("INFLUX_DB_TOKEN"),
+                                   org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
+
+    postgresHook = PostgresHook().get_hook(conn_id="postgres_tenlytics_write_connection_stage")
+    postgresConnection = postgresHook.get_conn()
+
+    result = postgresHook.get_first("SELECT 1")
+
+    if result:
+        print("PostgreSQL database is reachable.")
+
+        qollDf = getPollData(influxClient)
+        transformedQuizDf = getTransformedPollData(qollDf)
+        writeQuizData(transformedQuizDf, postgresConnection)
+
+    else:
+        raise ValueError("PostgreSQL database did not respond.")
 
 
 with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args,
