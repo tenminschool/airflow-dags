@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from airflow.decorators import task
+from airflow.models import Variable
 from airflow.models.dag import DAG
 from influxdb_client_3 import InfluxDBClient3
 
@@ -14,11 +15,8 @@ default_args = {
 @task()
 def syncInfluxQuizDataToPostgres(**kwargs):
     print("called")
-
-    client = InfluxDBClient3(token="your-token",
-                             host="your-host",
-                             org="your-org",
-                             database="your-database")
+    client = InfluxDBClient3(host=Variable.get("INFLUX_DB_URL"), token=Variable.get("INFLUX_DB_TOKEN"),
+                             org=Variable.get("INFLUX_DB_ORG"))
 
     print(client)
 
