@@ -71,11 +71,18 @@ def syncInfluxQuizDataToPostgres(**kwargs):
     client = InfluxDBClient3(host=Variable.get("INFLUX_DB_URL"), token=Variable.get("INFLUX_DB_TOKEN"),
                              org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
 
-    postgresHook = PostgresHook().get_hook(conn_id="postgres_write_connection_stage")
+    postgresHook = PostgresHook().get_hook(conn_id="postgres_tenlytics_write_connection_stage")
+    result = postgresHook.get_first("SELECT 1")
 
-    quizDf = getQuizData(client)
-    transformedDf = getTransformedData(quizDf)
-    print("test result ", postgresHook.test_connection())
+    if result:
+        print("PostgreSQL database is reachable.")
+
+        quizDf = getQuizData(client)
+        transformedDf = getTransformedData(quizDf)
+
+    else:
+        raise ValueError("PostgreSQL database did not respond.")
+
 
 
 with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args,
