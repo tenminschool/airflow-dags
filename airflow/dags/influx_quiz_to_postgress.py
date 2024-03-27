@@ -16,7 +16,7 @@ default_args = {
 def syncInfluxQuizDataToPostgres(**kwargs):
     print("called")
     client = InfluxDBClient3(host=Variable.get("INFLUX_DB_URL"), token=Variable.get("INFLUX_DB_TOKEN"),
-                             org=Variable.get("INFLUX_DB_ORG"))
+                             org=Variable.get("INFLUX_DB_ORG"), database="tracker_stage_db")
 
     query = "select * from quiz_participatns"
     reader = client.query(query=query, language="sql")
