@@ -4,6 +4,7 @@ import pandas as pd
 from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import DAG
+from airflow.providers.postgres.operators.postgres import PostgresOperator
 from influxdb_client_3 import InfluxDBClient3
 from pandas import DataFrame
 from airflow.providers.postgres.hooks.postgres import PostgresHook
@@ -80,9 +81,24 @@ def syncInfluxQuizDataToPostgres(**kwargs):
         quizDf = getQuizData(client)
         transformedDf = getTransformedData(quizDf)
 
+        insert_task = PostgresOperator(
+            task_id='insert_task',
+            postgres_conn_id='postgres_tenlytics_write_connection_stage',  # Connection ID configured in Airflow
+            sql="""
+                   INSERT INTO user_learning_reports (day, auth_user_id, total_quiz_submitted, total_quiz_corrected)
+VALUES (%s, %s, %s, %s)
+ON CONFLICT (day, auth_user_id) DO UPDATE SET total_quiz_submitted =user_learning_reports.total_quiz_submitted +
+                                                                    EXCLUDED.total_quiz_submitted,
+                                              total_quiz_corrected = user_learning_reports.total_quiz_corrected +
+                                                                     EXCLUDED.total_quiz_corrected;
+
+                """,
+            parameters=('2019-01-01', 1, 10, 8),  # Parameters to pass to the query
+        )
+
+
     else:
         raise ValueError("PostgreSQL database did not respond.")
-
 
 
 with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args,
