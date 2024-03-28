@@ -129,6 +129,52 @@ def getTransformedExamData(examDf: DataFrame):
     return pd.DataFrame(data)
 
 
+def writeExamData(transformedDf: DataFrame, postgresConnection):
+    cursor = postgresConnection.cursor()
+
+    for index, row in transformedDf.iterrows():
+        query = """INSERT INTO user_learning_reports (day, auth_user_id, total_cq_submitted, total_question_exam_submitted,
+                                   total_practice_question_exam_submitted, total_ielts_academic_reading_submitted,
+                                   total_ielts_academic_writing_submitted, total_ielts_general_writing_submitted,
+                                   total_ielts_general_reading_submitted, total_ielts_listening_submitted,
+                                   total_cq_duration, total_question_exam_duration,
+                                   total_practice_question_exam_duration, total_ielts_academic_reading_duration,
+                                   total_ielts_academic_writing_duration, total_ielts_general_writing_duration,
+                                   total_ielts_general_reading_duration, total_ielts_listening_duration)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+ON CONFLICT (day, auth_user_id) DO UPDATE SET total_cq_submitted =user_learning_reports.total_cq_submitted + EXCLUDED.total_cq_submitted,
+total_question_exam_submitted =user_learning_reports.total_question_exam_submitted + EXCLUDED.total_question_exam_submitted,
+total_practice_question_exam_submitted =user_learning_reports.total_practice_question_exam_submitted + EXCLUDED.total_practice_question_exam_submitted,
+total_ielts_academic_reading_submitted =user_learning_reports.total_ielts_academic_reading_submitted + EXCLUDED.total_ielts_academic_reading_submitted,
+total_ielts_academic_writing_submitted =user_learning_reports.total_ielts_academic_writing_submitted + EXCLUDED.total_ielts_academic_writing_submitted,
+total_ielts_general_writing_submitted =user_learning_reports.total_ielts_general_writing_submitted + EXCLUDED.total_ielts_general_writing_submitted,
+total_ielts_general_reading_submitted =user_learning_reports.total_ielts_general_reading_submitted + EXCLUDED.total_ielts_general_reading_submitted,
+total_ielts_listening_submitted =user_learning_reports.total_ielts_listening_submitted + EXCLUDED.total_ielts_listening_submitted,
+total_cq_duration =user_learning_reports.total_cq_duration + EXCLUDED.total_cq_duration,
+total_question_exam_duration =user_learning_reports.total_question_exam_duration + EXCLUDED.total_question_exam_duration,
+total_practice_question_exam_duration =user_learning_reports.total_practice_question_exam_duration + EXCLUDED.total_practice_question_exam_duration,
+total_ielts_academic_reading_duration =user_learning_reports.total_ielts_academic_reading_duration + EXCLUDED.total_ielts_academic_reading_duration,
+total_ielts_academic_writing_duration =user_learning_reports.total_ielts_academic_writing_duration + EXCLUDED.total_ielts_academic_writing_duration,
+total_ielts_general_writing_duration =user_learning_reports.total_ielts_general_writing_duration + EXCLUDED.total_ielts_general_writing_duration,
+total_ielts_general_reading_duration =user_learning_reports.total_ielts_general_reading_duration + EXCLUDED.total_ielts_general_reading_duration,
+total_ielts_listening_duration =user_learning_reports.total_ielts_listening_duration + EXCLUDED.total_ielts_listening_duration
+"""
+        cursor.execute(query,
+                       [row["day"], row["auth_user_id"], row["total_cq_submitted"],
+                        row['total_question_exam_submitted'], row['total_practice_question_exam_submitted'],
+                        row['total_ielts_academic_reading_submitted'], row['total_ielts_academic_writing_submitted'],
+                        row['total_ielts_general_writing_submitted'], row['total_ielts_general_reading_submitted'],
+                        row['total_ielts_listening_submitted'], row['total_cq_duration'],
+                        row['total_question_exam_duration'], row['total_practice_question_exam_duration'],
+                        row['total_ielts_academic_reading_duration'], row['total_ielts_academic_writing_duration'],
+                        row['total_ielts_general_writing_duration'], row['total_ielts_general_reading_duration'],
+                        row['total_ielts_listening_duration']])
+
+    postgresConnection.commit()
+    cursor.close()
+    postgresConnection.close()
+
+
 @task()
 def syncInfluxExamDataToPostgres(**kwargs):
     influxClient = InfluxDBClient3(host=Variable.get("INFLUX_DB_URL"), token=Variable.get("INFLUX_DB_TOKEN"),
@@ -144,7 +190,9 @@ def syncInfluxExamDataToPostgres(**kwargs):
 
         examDf = getExamData(influxClient)
         transformedExamData = getTransformedExamData(examDf)
-        print("transformedExamData ", transformedExamData)
+        print("transformedExamData ", transformedExamData.to_markdown())
+        writeExamData(transformedExamData, postgresConnection)
+
 
     else:
         raise ValueError("PostgreSQL database did not respond.")
