@@ -155,5 +155,5 @@ def syncInfluxPollDataToPostgres(**kwargs):
         raise ValueError("PostgreSQL database did not respond.")
 
 
-with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args, schedule_interval='*/5 * * * *') as dag:
+with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args, schedule_interval='@hourly') as dag:
     syncInfluxQuizDataToPostgres(), syncInfluxPollDataToPostgres()
