@@ -12,7 +12,6 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 default_args = {
     "owner": "Md. Toufiqul Islam",
     "start_date": datetime(2024, 2, 21),
-    'schedule_interval': '@hourly'  # every hour
 }
 
 
@@ -156,5 +155,5 @@ def syncInfluxPollDataToPostgres(**kwargs):
         raise ValueError("PostgreSQL database did not respond.")
 
 
-with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args) as dag:
+with DAG(dag_id="influx_quiz_to_postgres_etl", default_args=default_args, schedule_interval='*/5 * * * *') as dag:
     syncInfluxQuizDataToPostgres(), syncInfluxPollDataToPostgres()
