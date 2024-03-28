@@ -26,7 +26,7 @@ def getDay():
 
 def getExamData(client: InfluxDBClient3):
     query = """SELECT auth_user_id,type,COUNT(*) as total_submitted, SUM(time_taken) as total_duration FROM exam_users_new WHERE
- auth_user_id!='' AND type !='' AND time >= now() - interval '665 day'
+ auth_user_id!='' AND type !='' AND time >= now() - interval '665 day' AND time_taken >0
   GROUP BY auth_user_id,type"""
     reader = client.query(query=query, language="sql")
     return pd.DataFrame(reader.to_pandas())
