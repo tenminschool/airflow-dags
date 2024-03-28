@@ -12,7 +12,7 @@ from airflow.providers.postgres.hooks.postgres import PostgresHook
 default_args = {
     "owner": "Md. Toufiqul Islam",
     "start_date": datetime(2024, 2, 21),
-    'schedule_interval': '0 * * * *'  # every hour
+    'schedule_interval': '@hourly'  # every hour
 }
 
 
