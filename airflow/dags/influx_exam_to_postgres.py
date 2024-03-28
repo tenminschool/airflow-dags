@@ -57,42 +57,74 @@ def getTransformedExamData(examDf: DataFrame):
 
     for userId in uniqueAuthUserIds:
         filteredDf = examDf[examDf['auth_user_id'] == userId]
+        total_cq_submitted = 0
+        total_question_exam_submitted = 0
+        total_practice_question_exam_submitted = 0
+        total_ielts_academic_reading_submitted = 0
+        total_ielts_academic_writing_submitted = 0
+        total_ielts_general_writing_submitted = 0
+        total_ielts_general_reading_submitted = 0
+        total_ielts_listening_submitted = 0
+        total_cq_duration = 0
+        total_question_exam_duration = 0
+        total_practice_question_exam_duration = 0
+        total_ielts_academic_reading_duration = 0
+        total_ielts_academic_writing_duration = 0
+        total_ielts_general_writing_duration = 0
+        total_ielts_general_reading_duration = 0
+        total_ielts_listening_duration = 0
 
         for index, row in filteredDf.iterrows():
-            data['auth_user_id'].append(userId)
-            data['day'].append(getDay())
-
             if row['type'] == 'cq':
-                data['total_cq_submitted'].append(row['total_submitted'])
-                data['total_cq_duration'].append(row['total_duration'])
+                total_cq_submitted = row['total_submitted']
+                total_cq_duration = row['total_duration']
 
             if row['type'] == 'question':
-                data['total_question_exam_submitted'].append(row['total_submitted'])
-                data['total_question_exam_duration'].append(row['total_duration'])
+                total_question_exam_submitted = row['total_submitted']
+                total_question_exam_duration = row['total_duration']
 
             if row['type'] == 'practice_question':
-                data['total_practice_question_exam_submitted'].append(row['total_submitted'])
-                data['total_practice_question_exam_duration'].append(row['total_duration'])
+                total_practice_question_exam_submitted = row['total_submitted']
+                total_practice_question_exam_duration = row['total_duration']
 
             if row['type'] == 'ielts_academic_reading':
-                data['total_ielts_academic_reading_submitted'].append(row['total_submitted'])
-                data['total_ielts_academic_reading_duration'].append(row['total_duration'])
+                total_ielts_academic_reading_submitted = row['total_submitted']
+                total_ielts_academic_reading_duration = row['total_duration']
 
             if row['type'] == 'ielts_academic_writing':
-                data['total_ielts_academic_writing_submitted'].append(row['total_submitted'])
-                data['total_ielts_academic_writing_duration'].append(row['total_duration'])
+                total_ielts_academic_writing_submitted = row['total_submitted']
+                total_ielts_academic_writing_duration = row['total_duration']
 
             if row['type'] == 'ielts_general_writing':
-                data['total_ielts_general_writing_submitted'].append(row['total_submitted'])
-                data['total_ielts_general_writing_duration'].append(row['total_duration'])
+                total_ielts_general_writing_submitted = row['total_submitted']
+                total_ielts_general_writing_duration = row['total_duration']
 
             if row['type'] == 'ielts_general_reading':
-                data['total_ielts_general_reading_submitted'].append(row['total_submitted'])
-                data['total_ielts_general_reading_duration'].append(row['total_duration'])
+                total_ielts_general_reading_submitted = row['total_submitted']
+                total_ielts_general_reading_duration = row['total_duration']
 
             if row['type'] == 'ielts_listening':
-                data['total_ielts_listening_submitted'].append(row['total_submitted'])
-                data['total_ielts_listening_duration'].append(row['total_duration'])
+                total_ielts_listening_submitted = row['total_submitted']
+                total_ielts_listening_duration = row['total_duration']
+
+        data['auth_user_id'].append(userId)
+        data['day'].append(getDay())
+        data['total_cq_submitted'].append(getDay())
+        data['total_question_exam_submitted'].append(getDay())
+        data['total_practice_question_exam_submitted'].append(getDay())
+        data['total_ielts_academic_reading_submitted'].append(getDay())
+        data['total_ielts_academic_writing_submitted'].append(getDay())
+        data['total_ielts_general_writing_submitted'].append(getDay())
+        data['total_ielts_general_reading_submitted'].append(getDay())
+        data['total_ielts_listening_submitted'].append(getDay())
+        data['total_cq_duration'].append(getDay())
+        data['total_question_exam_duration'].append(getDay())
+        data['total_practice_question_exam_duration'].append(getDay())
+        data['total_ielts_academic_reading_duration'].append(getDay())
+        data['total_ielts_academic_writing_duration'].append(getDay())
+        data['total_ielts_general_writing_duration'].append(getDay())
+        data['total_ielts_general_reading_duration'].append(getDay())
+        data['total_ielts_listening_duration'].append(getDay())
 
     return pd.DataFrame(data)
 
